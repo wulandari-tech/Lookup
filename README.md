@@ -40,4 +40,10 @@ Setelah semua file siap di **repository GitHub**, ikuti langkah ini:
 ## **🎯 Contoh API yang Berjalan di Vercel**
 Setelah deploy, API bisa diakses seperti ini:
 
-https://domain.vercel.app/lookup/nik?nik=3204110101010001
+https://domain/lookup/nik?nik=3204110101010001
+
+ Don't delete the creator ✨
+
+## **👨‍💻 Creator**
+- Aortadev
+- Radzz
