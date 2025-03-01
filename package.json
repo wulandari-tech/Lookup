@@ -1,0 +1,8 @@
+{
+  "name": "lookup-nik-api",
+  "version": "1.0.0",
+  "main": "api/lookup.js",
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}
