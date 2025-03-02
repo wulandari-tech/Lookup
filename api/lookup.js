@@ -7,9 +7,8 @@ const app = express();
 // Fungsi untuk membaca JSON dengan aman
 const loadJSON = (fileName) => {
     try {
-        const filePath = path.join(__dirname, "../data", fileName);
-        console.log(`Membaca file: ${filePath}`);
-        
+    const filePath = path.resolve(__dirname, "../data", fileName);
+        console.log(`Membaca file: ${filePath}`); 
         if (!fs.existsSync(filePath)) {
             console.error(`⚠️ File ${fileName} tidak ditemukan!`);
             return [];
@@ -64,22 +63,23 @@ app.get("/lookup/nik", (req, res) => {
     const birthDate = `${day.toString().padStart(2, "0")}-${month.toString().padStart(2, "0")}-${birthYear}`;
     const serialNumber = nik.substring(12, 16);
 
-    res.json({
-        status: "success",
-        creator: "Aortadev",
-        data: {
-            Nik: nik,
-            Kabupaten: regency,
-            Kecamatan: district,
-            Provinsi: province
-        },
-        Info: {
-            TanggalLahir: birthDate,
-            Umur: `${age} tahun`,
-            NomorUrut: serialNumber
-        }
-    });
-});
+    res.status(200).json({
+    status: "success",
+    creator: "Aortadev",
+    data: {
+        Nik: nik,
+        Kabupaten: regency,
+        Kecamatan: district,
+        Provinsi: province
+    },
+    Info: {
+        TanggalLahir: birthDate,
+        Umur: `${age} tahun`,
+        NomorUrut: serialNumber
+    }
+}, null, 2);
 
+res.status(200).send(JSON.stringify(response, null, 2));
+    
 // Ekspor untuk Vercel
 module.exports = app;
