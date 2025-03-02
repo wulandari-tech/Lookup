@@ -3,78 +3,83 @@ const fs = require("fs");
 const path = require("path");
 
 const app = express();
-app.use(express.json());
 
-// Load data wilayah dari file JSON
-const provinces = JSON.parse(fs.readFileSync(path.join(__dirname, "../data/provinces.json")));
-const regencies = JSON.parse(fs.readFileSync(path.join(__dirname, "../data/regencies.json")));
-const districts = JSON.parse(fs.readFileSync(path.join(__dirname, "../data/districts.json")));
+// Fungsi untuk membaca JSON dengan aman
+const loadJSON = (fileName) => {
+    try {
+        const filePath = path.join(__dirname, "../data", fileName);
+        console.log(`Membaca file: ${filePath}`);
+        
+        if (!fs.existsSync(filePath)) {
+            console.error(`⚠️ File ${fileName} tidak ditemukan!`);
+            return [];
+        }
 
-// Fungsi untuk mendapatkan data wilayah dari kode NIK
-function getRegionFromNIK(nik) {
-    if (nik.length !== 16) return { error: "NIK harus 16 digit" };
+        const data = fs.readFileSync(filePath, "utf8");
+        return JSON.parse(data);
+    } catch (error) {
+        console.error(`❌ Gagal membaca ${fileName}:`, error.message);
+        return [];
+    }
+};
 
-    const kodeKabupaten = nik.substring(0, 4);
-    const kodeKecamatan = nik.substring(0, 6);
-    const kodeProvinsi = nik.substring(0, 2) + "00";
+// Load data wilayah
+const provinces = loadJSON("provinces.json");
+const regencies = loadJSON("regencies.json");
+const districts = loadJSON("districts.json");
 
-    const provinsi = provinces.find((p) => p.code === kodeProvinsi);
-    const kabupaten = regencies.find((r) => r.code.startsWith(kodeKabupaten));
-    const kecamatan = districts.find((d) => d.code.startsWith(kodeKecamatan));
-
-    // Parsing tanggal lahir
-    let tanggalLahir = nik.substring(6, 12);
-    let hari = parseInt(tanggalLahir.substring(0, 2), 10);
-    let bulan = tanggalLahir.substring(2, 4);
-    let tahun = parseInt("19" + tanggalLahir.substring(4, 6));
-
-    // Jika hari lebih dari 40, berarti wanita
-    if (hari > 40) hari -= 40;
-    tanggalLahir = `${hari.toString().padStart(2, "0")}-${bulan}-${tahun}`;
-
-    // Hitung umur berdasarkan tahun sekarang
-    const tahunSekarang = new Date().getFullYear();
-    let umur = tahunSekarang - tahun;
-
-    return {
-        Nik: nik,
-        Kabupaten: kabupaten ? kabupaten.name : "Tidak ditemukan",
-        Kecamatan: kecamatan ? kecamatan.name : "Tidak ditemukan",
-        Provinsi: provinsi ? provinsi.name : "Tidak ditemukan",
-        TanggalLahir: tanggalLahir,
-        Umur: umur,
-        NomorUrut: nik.substring(12, 16),
-    };
-}
-
-// API untuk lookup NIK
 app.get("/lookup/nik", (req, res) => {
-    const { nik } = req.query;
+    const nik = req.query.nik;
+    
+    if (!nik || nik.length !== 16) {
+        return res.status(400).json({ status: "error", message: "NIK harus 16 digit!" });
+    }
 
-    if (!nik) {
-        return res.status(400).json({ status: "error", message: "NIK diperlukan" });
-    }
-    const result = getRegionFromNIK(nik);
-    if (result.error) {
-        return res.status(400).json({ status: "error", message: result.error });
-    }
-  
-res.json({
+    // Ambil kode wilayah
+    const provinceCode = nik.substring(0, 2) + "00";
+    const regencyCode = nik.substring(0, 4);
+    const districtCode = nik.substring(0, 6);
+
+    // Cari data wilayah
+    const provinceData = provinces.find(p => p.code === provinceCode);
+    const regencyData = regencies.find(r => r.code === regencyCode);
+    const districtData = districts.find(d => d.code === districtCode);
+
+    const province = provinceData ? provinceData.name : "Tidak ditemukan";
+    const regency = regencyData ? regencyData.name : "Tidak ditemukan";
+    const district = districtData ? districtData.name : "Tidak ditemukan";
+
+    // Ambil tanggal lahir
+    let day = parseInt(nik.substring(6, 8), 10);
+    const month = parseInt(nik.substring(8, 10), 10);
+    const year = parseInt(nik.substring(10, 12), 10);
+
+    // Jika angka hari > 40, berarti perempuan (dikurangi 40)
+    if (day > 40) day -= 40;
+
+    const birthYear = year >= 25 ? 1900 + year : 2000 + year;
+    const currentYear = new Date().getFullYear();
+    const age = currentYear - birthYear;
+
+    const birthDate = `${day.toString().padStart(2, "0")}-${month.toString().padStart(2, "0")}-${birthYear}`;
+    const serialNumber = nik.substring(12, 16);
+
+    res.json({
         status: "success",
         creator: "Aortadev",
         data: {
-            Nik: result.Nik,
-            Kabupaten: result.Kabupaten,
-            Kecamatan: result.Kecamatan,
-            Provinsi: result.Provinsi,
+            Nik: nik,
+            Kabupaten: regency,
+            Kecamatan: district,
+            Provinsi: province
         },
         Info: {
-            TanggalLahir: result.TanggalLahir,
-            Umur: result.Umur + " tahun",
-            NomorUrut: result.NomorUrut,
-        },
+            TanggalLahir: birthDate,
+            Umur: `${age} tahun`,
+            NomorUrut: serialNumber
+        }
     });
 });
 
-// Export handler untuk Vercel
+// Ekspor untuk Vercel
 module.exports = app;
