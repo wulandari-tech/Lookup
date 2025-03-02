@@ -2,7 +2,7 @@
 API ini digunakan untuk parsing NIK dan mendapatkan informasi wilayah serta umur.
 
 ## Endpoint
-- **GET /lookup/nik?nik=3204110101010001**
+- **GET api/lookup?nik=3120064401910006**
   
 ## Response
 ```json
@@ -40,10 +40,15 @@ Setelah semua file siap di **repository GitHub**, ikuti langkah ini:
 ## **🎯 Contoh API yang Berjalan di Vercel**
 Setelah deploy, API bisa diakses seperti ini:
 
-https://domain/lookup/nik?nik=3204110101010001
+https://domain/api/lookup?nik=3120064401910006
 
  Don't delete the creator ✨
 
-## **👨‍💻 Creator**
-- Aortadev
-- Radzz
+## **👨‍💻 Thanks To**
+- Aortadev ( Creator )
+- Radzz ( data )
+- Renzelt ( My Friend )
+- Lexxy ( Sepuh Jir )
+- Visualx ( My Team )
+- Allah ( My God )
+
