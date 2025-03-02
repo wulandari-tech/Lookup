@@ -1,3 +1,26 @@
+const express = require("express");
+const fs = require("fs");
+const path = require("path");
+const router = express.Router(); // Pastikan router dideklarasikan di sini
+
+// Fungsi membaca file JSON dengan aman
+function readJSON(fileName) {
+    try {
+        const filePath = path.join(__dirname, "../data", fileName);
+        return JSON.parse(fs.readFileSync(filePath, "utf8"));
+    } catch (error) {
+        console.error(`Gagal membaca ${fileName}:`, error.message);
+        return [];
+    }
+}
+
+// Load data wilayah
+const provinces = readJSON("provinces.json");
+const regencies = readJSON("regencies.json");
+const districts = readJSON("districts.json");
+
+// Fungsi parsing NIK
+
 function parseNIK(nik) {
     if (!/^\d{16}$/.test(nik)) return null;
 
