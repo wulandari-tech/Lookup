@@ -1,9 +1,9 @@
+// Delete credit yapit anj
 const express = require("express");
 const fs = require("fs");
 const path = require("path");
-const router = express.Router(); // Pastikan router dideklarasikan di sini
+const router = express.Router();
 
-// Fungsi membaca file JSON dengan aman
 function readJSON(fileName) {
     try {
         const filePath = path.join(__dirname, "../data", fileName);
@@ -14,12 +14,9 @@ function readJSON(fileName) {
     }
 }
 
-// Load data wilayah
 const provinces = readJSON("provinces.json");
 const regencies = readJSON("regencies.json");
 const districts = readJSON("districts.json");
-
-// Fungsi parsing NIK
 
 function parseNIK(nik) {
     if (!/^\d{16}$/.test(nik)) return null;
@@ -31,14 +28,10 @@ function parseNIK(nik) {
     let tahun = nik.substring(10, 12);
     let nomorUrut = nik.substring(12, 16);
 
-    // Perbaikan tanggal lahir (untuk wanita +40)
     if (tgl > 40) tgl -= 40;
     let tahunLengkap = parseInt(tahun) < 25 ? `20${tahun}` : `19${tahun}`;
 
-    // Hitung umur
     let umur = new Date().getFullYear() - parseInt(tahunLengkap);
-
-    // Ambil data wilayah
     let provinsi = provinces.find((p) => p.code.startsWith(kodeKab)) || { name: "Tidak ditemukan" };
     let kabupaten = regencies.find((r) => r.code.startsWith(kodeKab)) || { name: "Tidak ditemukan" };
     let kecamatan = districts.find((d) => d.code.startsWith(kodeKec)) || { name: "Tidak ditemukan" };
@@ -56,7 +49,6 @@ function parseNIK(nik) {
     };
 }
 
-// Endpoint /lookup
 router.get("/lookup", (req, res) => {
     let { nik } = req.query;
     if (!nik) return res.status(400).json({ status: "error", message: "Masukkan parameter ?nik=16_digit" });
