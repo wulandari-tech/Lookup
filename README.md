@@ -45,10 +45,10 @@ https://domain/api/lookup?nik=3120064401910006
  Don't delete the creator ✨
 
 ## **👨‍💻 Thanks To**
-- Aortadev ( Creator )
-- Radzz ( data )
-- Renzelt ( My Friend )
+- Aort4 ( Creator )
+- R4dzz ( data )
+- R3n ( My Friend )
 - Lexxy ( Sepuh Jir )
+- h4mz ( anomali )
 - Visualx ( My Team )
-- Allah ( My God )
 
