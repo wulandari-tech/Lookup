@@ -3,9 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pay-Mu | WANZOFC </title>
+    <title>Pay-Mu | WANZOFC</title>
     <style>
-        /* CSS Reset & Basic Styling */
         *, *::before, *::after {
             box-sizing: border-box;
             margin: 0;
@@ -13,10 +12,10 @@
         }
 
         :root {
-            --primary-color: #4a00e0; /* Ungu cerah */
-            --secondary-color: #8e2de2; /* Ungu lebih muda */
-            --accent-color: #00bcd4;   /* Cyan untuk aksen */
-            --background-color: #f0f2f5; /* Latar belakang abu-abu muda */
+            --primary-color: #4a00e0;
+            --secondary-color: #8e2de2;
+            --accent-color: #00bcd4;
+            --background-color: #f0f2f5;
             --text-color: #333;
             --text-light: #f8f8f8;
             --card-bg: #ffffff;
@@ -34,10 +33,9 @@
             align-items: center;
             min-height: 100vh;
             padding: 20px;
-            overflow-x: hidden; /* Mencegah scroll horizontal jika konten sedikit lebar */
+            overflow-x: hidden;
         }
 
-        /* Payment Card and Layout*/
         .payment-card {
             background-color: var(--card-bg);
             border-radius: var(--border-radius);
@@ -47,19 +45,18 @@
             max-width: 450px;
             text-align: center;
             transition: transform 0.3s ease, box-shadow 0.3s ease;
-            position: relative; /* Untuk posisi saldo absolute */
+            position: relative;
         }
         .payment-card:hover {
             transform: translateY(-5px);
             box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
         }
 
-        /* Saldo (di pojok kanan atas) */
         #user-balance {
             position: absolute;
             top: 15px;
             right: 15px;
-            background-color: rgba(255,255,255,0.9); /* Sedikit transparan */
+            background-color: rgba(255,255,255,0.9);
             padding: 8px 15px;
             border-radius: var(--border-radius);
             font-size: 0.85em;
@@ -68,8 +65,6 @@
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
 
-
-        /* Header */
         .card-header {
             margin-bottom: 30px;
         }
@@ -90,7 +85,6 @@
             color: #666;
         }
 
-        /* Form Styling */
         .form-group {
             margin-bottom: 20px;
             text-align: left;
@@ -104,7 +98,7 @@
             color: #555;
         }
 
-        .form-group input {
+        .form-group input, .form-group select {
             width: 100%;
             padding: 12px 15px;
             border: 1px solid #ccc;
@@ -112,12 +106,12 @@
             font-size: 1em;
             transition: border-color 0.3s ease, box-shadow 0.3s ease;
         }
-        .form-group input:focus {
+        .form-group input:focus, .form-group select:focus {
             outline: none;
             border-color: var(--primary-color);
             box-shadow: 0 0 0 3px rgba(74, 0, 224, 0.2);
         }
-         /* Input khusus amount dengan prefix */
+
          .input-group {
             position: relative;
          }
@@ -137,11 +131,10 @@
             font-weight: 600;
          }
          .input-group input {
-             padding-left: 60px; /* Sesuaikan dengan lebar prefix */
+             padding-left: 60px;
          }
 
-        /* Button Styling */
-        .btn-generate {
+        .btn-generate, .btn-admin {
             background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
             color: var(--text-light);
             border: none;
@@ -155,26 +148,24 @@
             margin-top: 10px;
         }
 
-        .btn-generate:hover {
+        .btn-generate:hover, .btn-admin:hover {
             background: linear-gradient(90deg, var(--secondary-color), var(--primary-color));
             transform: translateY(-2px);
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
         }
-        .btn-generate:active {
+        .btn-generate:active, .btn-admin:active {
              transform: translateY(0);
              box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
         }
-        .btn-generate:disabled {
+        .btn-generate:disabled, .btn-admin:disabled {
             background: #ccc;
             cursor: not-allowed;
             opacity: 0.7;
         }
 
-
-        /* QR Code Display Area */
         .qr-code-container {
             margin-top: 30px;
-            min-height: 200px; /* Placeholder space */
+            min-height: 200px;
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -193,9 +184,8 @@
             display: block;
             max-width: 100%;
             height: auto;
-            border-radius: 4px; /* Sedikit rounded di QR nya */
+            border-radius: 4px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            margin-bottom: 10px;
         }
 
         .qr-code-container p {
@@ -203,12 +193,11 @@
             color: #777;
         }
 
-        /* Error Message Styling */
         .error-message {
-            color: #d93025; /* Merah error */
+            color: #d93025;
             font-size: 0.85em;
             margin-top: 5px;
-            min-height: 1.2em; /* Reserve space */
+            min-height: 1.2em;
             text-align: left;
         }
         #general-error {
@@ -218,7 +207,6 @@
             min-height: 1.5em;
         }
 
-        /* Loading Spinner */
         .spinner {
             border: 4px solid rgba(0, 0, 0, 0.1);
             width: 36px;
@@ -234,14 +222,13 @@
             100% { transform: rotate(360deg); }
         }
 
-        /* Konfirmasi/Checkout */
         #checkout-container {
             margin-top: 30px;
             padding: 25px 30px;
             border: 1px solid #ddd;
             border-radius: var(--border-radius);
             background-color: #f9f9f9;
-            display: none; /* Awalnya tersembunyi */
+            display: none;
         }
 
         #checkout-container h2 {
@@ -255,162 +242,415 @@
             margin-bottom: 10px;
         }
 
-        /* Timer */
         #timer {
             font-size: 1.2em;
             font-weight: bold;
-            color: #28a745; /* Hijau */
+            color: #28a745;
         }
         #timer.expired {
-            color: #dc3545; /* Merah */
+            color: #dc3545;
         }
 
-        /* Responsiveness */
-        @media (max-width: 500px) {
-            .payment-card {
-                padding: 25px 20px;
-            }
-            .card-header h1 {
-                font-size: 1.5em;
-            }
-             .input-group input {
-                 padding-left: 55px;
-             }
-             .input-group .input-prefix {
-                 padding: 0 10px;
-             }
+        #admin-link {
+           position: absolute;
+           top: 15px;
+           left: 15px;
+           font-size: 0.85em;
+           font-weight: 600;
+           color: var(--primary-color);
+           text-decoration: none;
+           padding: 8px 15px;
+           border-radius: var(--border-radius);
+           background-color: rgba(255,255,255,0.9);
+           box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
-
     </style>
 </head>
 <body>
 
-    <div class="payment-card">
-        <div id="user-balance">Saldo: Rp 1.250.000</div>  <!-- Dummy Saldo -->
-        <div class="card-header">
-            <h1>Pay<span class="mu">-Mu</span></h1>
-            <p>hasilkan Kode QR untuk Pembayaran Anda</p>
-        </div>
+    <div class="app-container">
+        <div id="user-balance" class="user-balance">Saldo: Rp <span id="balance-amount">0.00</span></div>
+        <a href="/admin/dashboard" id="admin-link" style="display: none;">Admin Dashboard</a>
 
-        <form id="payment-form">
-            <div class="form-group">
-                <label for="amount">Amount (IDR)</label>
-                <div class="input-group">
-                    <span class="input-prefix">Rp</span>
-                    <input type="number" id="amount" name="amount" placeholder="e.g., 50000" min="1" step="any" required>
+        <div id="register-form" class="form-container" style="display:none;">
+            <h1>Register</h1>
+            <form id="registration-form">
+                <div class="form-group">
+                    <label for="register-username">Username</label>
+                    <input type="text" id="register-username" name="register-username" required placeholder="Enter Username">
                 </div>
-                 <div class="error-message" id="amount-error"></div>
-            </div>
-
-            <div class="form-group">
-                <label for="transactionId">Transaction ID</label>
-                <input type="text" id="transactionId" name="transactionId" placeholder="e.g., INV-12345 or Auto-Generated" required>
-                 <div class="error-message" id="transactionId-error"></div>
-            </div>
-
-            <div class="form-group">
-                <label for="description">Description (Optional)</label>
-                <input type="text" id="description" name="description" placeholder="e.g., Payment for Order #XYZ">
-            </div>
-
-            <button type="submit" id="generate-btn" class="btn-generate">Generate Payment QR</button>
-            <div id="general-error" class="error-message" style="text-align: center; font-weight: bold;"></div>
-        </form>
-
-        <div id="qr-code-result" class="qr-code-container">
-            <p>Your payment QR code will appear here.</p>
-            <!-- QR Code or Spinner will be loaded here -->
+                <div class="form-group">
+                    <label for="register-password">Password</label>
+                    <input type="password" id="register-password" name="register-password" required placeholder="Enter Password">
+                </div>
+                <button type="submit" class="btn-generate">Register</button>
+                <p class="error-message" id="register-error"></p>
+                <a href="#" onclick="showLoginForm()">Already have an account? Login</a>
+            </form>
         </div>
 
-        <!-- Halaman Konfirmasi/Checkout -->
-        <div id="checkout-container">
-            <h2>Confirm Payment</h2>
-            <div class="checkout-info">
-                <p>Transaction ID: <span id="checkout-transaction-id"></span></p>
-                <p>Amount: <span id="checkout-amount"></span></p>
-                <p>Description: <span id="checkout-description"></span></p>
-                <p>Time remaining: <span id="timer"></span></p>
+        <div id="login-form" class="form-container" style="display:none;">
+            <h1>Login</h1>
+            <form id="login-form">
+                <div class="form-group">
+                    <label for="login-username">Username</label>
+                    <input type="text" id="login-username" name="login-username" required placeholder="Enter Username">
+                </div>
+                <div class="form-group">
+                    <label for="login-password">Password</label>
+                    <input type="password" id="login-password" name="login-password" required placeholder="Enter Password">
+                </div>
+                <button type="submit" class="btn-generate">Login</button>
+                <p class="error-message" id="login-error"></p>
+                <a href="#" onclick="showRegistrationForm()">Don't have an account? Register</a>
+            </form>
+        </div>
+
+        <div class="main-content" id="main-content" style="display:none;">
+             <div id="profile-area" class="profile-area">
+                <button id="logout-button" class="btn-generate" style="margin-top: 0;">Logout</button>
+            </div>
+
+            <div class="payment-card">
+                <div class="card-header">
+                    <h1>Pay<span class="mu">-Mu</span></h1>
+                    <p>Generate QR Code for Your Payment</p>
+                </div>
+
+                <form id="payment-form">
+                    <div class="form-group">
+                        <label for="amount">Amount (IDR)</label>
+                        <div class="input-group">
+                            <span class="input-prefix">Rp</span>
+                            <input type="number" id="amount" name="amount" placeholder="e.g., 50000" min="1" step="any" required>
+                        </div>
+                        <div class="error-message" id="amount-error"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="transactionId">Transaction ID</label>
+                        <input type="text" id="transactionId" name="transactionId" placeholder="e.g., INV-12345 or Auto-Generated" required>
+                        <div class="error-message" id="transactionId-error"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="description">Description (Optional)</label>
+                        <input type="text" id="description" name="description" placeholder="e.g., Payment for Order #XYZ">
+                    </div>
+
+                     <div class="form-group">
+                        <label for="payment-method">Payment Method</label>
+                        <select id="payment-method" name="payment-method" required>
+                            <option value="" disabled selected>Select Payment Method</option>
+                            <option value="dana">DANA</option>
+                            <option value="gopay">GoPay</option>
+                        </select>
+                        <div class="error-message" id="payment-method-error"></div>
+                    </div>
+
+                    <button type="submit" id="generate-btn" class="btn-generate">Generate Payment QR</button>
+                    <div id="general-error" class="error-message" style="text-align: center; font-weight: bold;"></div>
+                </form>
+
+                <div id="qr-code-result" class="qr-code-container">
+                    <p>Your payment QR code will appear here.</p>
+                </div>
+            </div>
+
+            <div id="checkout-container">
+                <h2>Confirm Payment</h2>
+                <div class="checkout-info">
+                    <p>Transaction ID: <span id="checkout-transaction-id"></span></p>
+                    <p>Amount: <span id="checkout-amount"></span></p>
+                    <p>Description: <span id="checkout-description"></span></p>
+                    <p>Payment Method: <span id="checkout-payment-method"></span></p>
+                    <p>Time remaining: <span id="timer"></span></p>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const paymentForm = document.getElementById('payment-form');
-            const amountInput = document.getElementById('amount');
-            const transactionIdInput = document.getElementById('transactionId');
-            const descriptionInput = document.getElementById('description');
-            const generateBtn = document.getElementById('generate-btn');
-            const qrCodeResultDiv = document.getElementById('qr-code-result');
-            const amountError = document.getElementById('amount-error');
-            const transactionIdError = document.getElementById('transactionId-error');
-            const generalError = document.getElementById('general-error');
-            const checkoutContainer = document.getElementById('checkout-container');
-            const checkoutTransactionId = document.getElementById('checkout-transaction-id');
-            const checkoutAmount = document.getElementById('checkout-amount');
-            const checkoutDescription = document.getElementById('checkout-description');
-            const timerElement = document.getElementById('timer');
+        const el = (id) => document.getElementById(id);
 
-            // Konfigurasi timer (dalam detik)
-            const timerDuration = 60;  // 60 detik = 1 menit
-            let countdownInterval; // untuk menyimpan interval timer
+        const show = (elementId) => {
+            const element = el(elementId);
+            if (element) element.style.display = 'block';
+        };
 
-            // Fungsi untuk membersihkan pesan error
-            const clearErrors = () => {
-                amountError.textContent = '';
-                transactionIdError.textContent = '';
-                generalError.textContent = '';
-                amountInput.style.borderColor = '#ccc'; // Reset border color
-                transactionIdInput.style.borderColor = '#ccc';
-            };
+        const hide = (elementId) => {
+            const element = el(elementId);
+            if (element) element.style.display = 'none';
+        };
 
-            // Fungsi untuk menampilkan pesan error spesifik
-            const showError = (element, messageElement, message) => {
-                messageElement.textContent = message;
-                if (element) {
-                    element.style.borderColor = '#d93025'; // Highlight border merah
+        const showRegistrationForm = () => {
+            hideAllContent();
+            show('register-form');
+        };
+
+        const showLoginForm = () => {
+            hideAllContent();
+            show('login-form');
+        };
+
+        const showMainContent = () => {
+            hideAllContent();
+            show('main-content');
+        };
+
+        const hideAllContent = () => {
+            hide('register-form');
+            hide('login-form');
+            hide('main-content');
+            hide('checkout-container');
+        };
+
+        const clearError = (elementId) => {
+            const errorElement = el(elementId);
+            if (errorElement) errorElement.textContent = '';
+        };
+
+        const showError = (element, message) => {
+            if (element) {
+                element.textContent = message;
+                element.style.color = '#d93025';
+            }
+        };
+
+        const loadUserProfile = async () => {
+            try {
+                const response = await fetch('/profile');
+                if (response.ok) {
+                    const profileData = await response.json();
+                    el('balance-amount').textContent = profileData.balance.toLocaleString('id-ID');
+                    showMainContent();
+                    toggleAdminLink(profileData.isAdmin);
+                    return true;
+                } else {
+                    console.error('Failed to load profile:', response.status);
+                    showLoginForm();
+                    return false;
                 }
-            };
+            } catch (error) {
+                console.error('Error fetching profile:', error);
+                showLoginForm();
+                return false;
+            }
+        };
 
-             // Fungsi untuk menampilkan loading
+        const toggleAdminLink = (isAdmin) => {
+            const adminLink = el('admin-link');
+            if (adminLink) {
+                adminLink.style.display = isAdmin ? 'block' : 'none';
+            }
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const registerForm = el('registration-form');
+            const loginForm = el('login-form');
+            const paymentForm = el('payment-form');
+
+            const registerError = el('register-error');
+            const loginError = el('login-error');
+            const generalError = el('general-error');
+            const amountError = el('amount-error');
+            const transactionIdError = el('transactionId-error');
+            const paymentMethodError = el('payment-method-error');
+
+            const checkoutContainer = el('checkout-container');
+            const checkoutTransactionId = el('checkout-transaction-id');
+            const checkoutAmount = el('checkout-amount');
+            const checkoutDescription = el('checkout-description');
+            const checkoutPaymentMethod = el('checkout-payment-method');
+            const timerElement = el('timer');
+            const qrCodeResultDiv = el('qr-code-result');
+
+            const logoutButton = el('logout-button');
+            const balanceAmount = el('balance-amount');
+
+            const timerDuration = 60;
+            let countdownInterval;
+
              const showLoading = () => {
                 qrCodeResultDiv.innerHTML = '<div class="spinner"></div><p>Generating QR Code...</p>';
                 qrCodeResultDiv.classList.add('loading');
-                generateBtn.disabled = true;
-                generateBtn.textContent = 'Generating...';
+                if(paymentForm) {
+                   paymentForm.querySelector('#generate-btn').disabled = true;
+                   paymentForm.querySelector('#generate-btn').textContent = 'Generating...';
+                }
              };
 
-             // Fungsi untuk menyembunyikan loading
              const hideLoading = () => {
                  qrCodeResultDiv.classList.remove('loading');
-                 generateBtn.disabled = false;
-                 generateBtn.textContent = 'Generate Payment QR';
+                 if(paymentForm) {
+                     paymentForm.querySelector('#generate-btn').disabled = false;
+                     paymentForm.querySelector('#generate-btn').textContent = 'Generate Payment QR';
+                }
              };
 
-            // Fungsi untuk menampilkan QR Code
-             const displayQrCode = (qrCodeBase64, paymentDetails) => {
-                qrCodeResultDiv.innerHTML = `
-                    <img src="data:image/png;base64,${qrCodeBase64}" alt="Pay-Mu Payment QR Code">
-                    <p>Scan this QR to pay ${paymentDetails.currency} ${paymentDetails.amount.toLocaleString('id-ID')}.</p>
-                    <p style="font-size: 0.8em; color: #999;">ID: ${paymentDetails.transactionId}</p>
-                `;
-             };
+            const generateUniqueId = () => `PM-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
 
-             // Fungsi untuk menampilkan halaman checkout
-             const showCheckout = (paymentDetails) => {
-                 checkoutTransactionId.textContent = paymentDetails.transactionId;
-                 checkoutAmount.textContent = `${paymentDetails.currency} ${paymentDetails.amount.toLocaleString('id-ID')}`;
-                 checkoutDescription.textContent = paymentDetails.description || 'No Description';
+            if (registerForm) {
+                registerForm.addEventListener('submit', async (event) => {
+                    event.preventDefault();
+                    clearError('register-error');
+                    const username = el('register-username').value.trim();
+                    const password = el('register-password').value.trim();
+                    if (!username || !password) {
+                        showError(registerError, 'Username and password are required.');
+                        return;
+                    }
+                    try {
+                        const response = await fetch('/register', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ username, password }),
+                        });
+                        if (response.ok) {
+                            alert('Registration successful! Please login.');
+                            showLoginForm();
+                        } else {
+                            const errorData = await response.json();
+                            showError(registerError, errorData.error || 'Unknown error');
+                        }
+                    } catch (error) {
+                        console.error('Registration Error:', error);
+                        showError(registerError, 'Registration failed. Check console.');
+                    }
+                });
+            }
 
-                 startTimer(); // Mulai timer
-                 paymentForm.style.display = 'none'; // Sembunyikan form
-                 qrCodeResultDiv.style.display = 'none'; // Sembunyikan area QR
-                 checkoutContainer.style.display = 'block'; // Tampilkan halaman checkout
-             };
+            if (loginForm) {
+                loginForm.addEventListener('submit', async (event) => {
+                    event.preventDefault();
+                    clearError('login-error');
+                    const username = el('login-username').value.trim();
+                    const password = el('login-password').value.trim();
 
+                    if (!username || !password) {
+                        showError(loginError, 'Username and password are required.');
+                        return;
+                    }
 
-            // Fungsi untuk memulai timer
-            const startTimer = () => {
+                    try {
+                        const response = await fetch('/login', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ username, password }),
+                        });
+
+                        if (response.ok) {
+                            const data = await response.json();
+                            console.log('Login successful:', data);
+                            if (data.isAdmin) {
+                                sessionStorage.setItem('isAdmin', 'true');
+                            }
+                            loadUserProfile();
+                        } else {
+                            const errorData = await response.json();
+                            showError(loginError, errorData.error || 'Invalid credentials');
+                        }
+                    } catch (error) {
+                        console.error('Login Error:', error);
+                        showError(loginError, 'Login failed. Check console.');
+                    }
+                });
+            }
+
+            if (logoutButton) {
+                logoutButton.addEventListener('click', async () => {
+                    try {
+                        const response = await fetch('/logout', { method: 'POST' });
+                        if (response.ok) {
+                            sessionStorage.removeItem('isAdmin');
+                            showLoginForm();
+                        } else {
+                            console.error('Logout failed');
+                            alert('Logout failed');
+                        }
+                    } catch (error) {
+                        console.error('Logout error', error);
+                        alert('Logout failed. Check the console.');
+                    }
+                });
+            }
+
+            if (paymentForm) {
+                paymentForm.addEventListener('submit', async (event) => {
+                    event.preventDefault();
+                    clearError('amount-error');
+                    clearError('transactionId-error');
+                    clearError('payment-method-error');
+                    const amount = el('amount').value;
+                    const transactionId = el('transactionId').value;
+                    const description = el('description').value;
+                    const paymentMethod = el('payment-method').value;
+
+                    // --- Validation (Client-Side)---
+                     let isValid = true;
+                     if (!amount || isNaN(parseFloat(amount)) || parseFloat(amount) <= 0) {
+                         showError(amountError, 'Please enter a valid amount.');
+                         isValid = false;
+                     }
+                     if (!transactionId) {
+                         showError(transactionIdError, 'Transaction ID is required.');
+                         isValid = false;
+                     }
+                     if (!paymentMethod) {
+                          showError(paymentMethodError, 'Please select a payment method.');
+                          isValid = false;
+                      }
+
+                    if (!isValid) {
+                        return;
+                    }
+                    // --- End Validation ---
+
+                    showLoading();
+
+                    try {
+                        const response = await fetch('/api/allpay-qr', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                amount: amount,
+                                transactionId: transactionId,
+                                description: description,
+                                paymentMethod: paymentMethod,
+                            })
+                        });
+
+                        if (!response.ok) {
+                           const errorData = await response.json();
+                           throw new Error(`HTTP error! Status: ${response.status}.  ${errorData.error || ''}`);
+                        }
+
+                        const data = await response.json();
+                        hideLoading();
+                        qrCodeResultDiv.innerHTML = `
+                           <img src="data:image/png;base64,${data.qrCode}" alt="Pay-Mu Payment QR Code">
+                           <p>Scan to pay ${data.currency} ${parseFloat(data.amount).toLocaleString('id-ID')}</p>
+                           <p style="font-size: 0.8em; color: #999;">ID: ${data.transactionId}</p>
+                        `;
+
+                        checkoutTransactionId.textContent = data.transactionId;
+                        checkoutAmount.textContent = `${data.currency} ${parseFloat(data.amount).toLocaleString('id-ID')}`;
+                        checkoutDescription.textContent = data.description || 'No Description';
+                        checkoutPaymentMethod.textContent = data.paymentMethod;
+
+                        show('checkout-container');
+
+                    } catch (error) {
+                         hideLoading();
+                         console.error("Error fetching QR code:", error);
+                         qrCodeResultDiv.innerHTML = '<p style="color: #d93025;">Could not generate QR code. Please check your input or try again later.</p>';
+                         generalError.textContent = 'Failed to load QR Code from server.  Check the console for more details';
+                    }
+                });
+            }
+
+            // ---- Checkout timer ----
+             const startTimer = () => {
                  let timeLeft = timerDuration;
                  timerElement.textContent = timeLeft;
 
@@ -424,117 +664,25 @@
                      if (timeLeft <= 0) {
                          clearInterval(countdownInterval);
                          timerElement.textContent = 'Expired';
-                         //  Tambahkan logika untuk menampilkan pesan kedaluwarsa
-                         //  atau menonaktifkan UI checkout
-                         //  Contoh:
                          qrCodeResultDiv.innerHTML = '<p style="color: #d93025; font-weight: bold;">Transaction Expired</p>';
                          qrCodeResultDiv.style.display = 'block';
-                         checkoutContainer.style.display = 'none'; // Hide the checkout
+                         checkoutContainer.style.display = 'none';
                      }
                  }, 1000);
              };
 
-            // Fungsi untuk menghentikan timer (misalnya saat pembayaran berhasil)
-            const stopTimer = () => {
+             const stopTimer = () => {
                 clearInterval(countdownInterval);
-            };
-
-             // Auto-generate Transaction ID (contoh sederhana)
-             const generateUniqueId = () => {
-                 return `PM-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
              };
 
-            // Isi field transactionId saat halaman load
-            transactionIdInput.value = generateUniqueId();
-
-            // Event listener untuk form submission
-            paymentForm.addEventListener('submit', async (event) => {
-                event.preventDefault(); // Mencegah submit form standar
-                clearErrors();
-
-                const amount = amountInput.value.trim();
-                const transactionId = transactionIdInput.value.trim();
-                const description = descriptionInput.value.trim();
-
-                // --- Validasi Frontend Sederhana ---
-                let isValid = true;
-                if (!amount || isNaN(parseFloat(amount)) || parseFloat(amount) <= 0) {
-                    showError(amountInput, amountError, 'Please enter a valid positive amount.');
-                    isValid = false;
-                }
-                 if (!transactionId) {
-                    showError(transactionIdInput, transactionIdError, 'Transaction ID is required.');
-                    isValid = false;
-                 }
-
-                if (!isValid) {
-                    return; // Hentikan proses jika tidak valid
-                }
-                // --- Akhir Validasi ---
-
-                showLoading();
-
-                // Buat query string
-                const params = new URLSearchParams({
-                    amount: amount,
-                    transactionId: transactionId,
-                    ...(description && { description: description })
-                    // currency bisa ditambahkan jika ingin user memilih, contoh:
-                    // currency: document.getElementById('currency-select').value
-                });
-
-                // Panggil API backend
-                try {
-                    const response = await fetch(`/qr?${params.toString()}`);
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                    const data = await response.json(); // Dapatkan data JSON dari respons
-
-                    hideLoading();
-                    // Tampilkan QR code
-                    displayQrCode(data.qrCode, {  // Gunakan data.qrCode (base64)
-                        amount: data.amount,
-                        transactionId: data.transactionId,
-                        currency: data.currency,
-                        description: data.description
-                    });
-
-                    // Tampilkan halaman checkout
-                    showCheckout({
-                        transactionId: data.transactionId,
-                        amount: data.amount,
-                        currency: data.currency,
-                        description: data.description
-                    });
-
-                } catch (error) {
-                   hideLoading();
-                   console.error("Error fetching QR code:", error);
-                   qrCodeResultDiv.innerHTML = '<p style="color: #d93025;">Could not generate QR code. Please check your input or try again later.</p>';
-                   generalError.textContent = 'Failed to load QR Code from server.  Check the console for more details';
-                }
-
-
-                // Update Transaction ID untuk generate berikutnya (opsional)
-                // transactionIdInput.value = generateUniqueId();
-            });
-
-            // Clear error saat user mulai mengetik lagi
-            amountInput.addEventListener('input', () => {
-                if (amountError.textContent) {
-                   amountError.textContent = '';
-                   amountInput.style.borderColor = '#ccc';
-                }
-            });
-            transactionIdInput.addEventListener('input', () => {
-                if (transactionIdError.textContent) {
-                   transactionIdError.textContent = '';
-                   transactionIdInput.style.borderColor = '#ccc';
-                }
-            });
+            // Automatically start on load or after a successful QR generation
+            const isLoggedIn = loadUserProfile(); // Automatically load the user profile
+            if (isLoggedIn) {
+               showMainContent(); // Menampilkan halaman utama
+            } else {
+               showLoginForm();
+            }
         });
     </script>
-
 </body>
 </html>
