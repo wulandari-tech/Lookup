@@ -2,17 +2,20 @@ const express = require('express');
 const session = require('express-session');
 const bcrypt = require('bcrypt');
 const path = require('path');
-const QRCode = require('qrcode'); // For generating QR code (if needed for basic display)
-
-// Integrasi dengan penyedia pembayaran (contoh)
-// const allpayProvider = require('./allpayProvider'); // File terpisah (lihat di bawah)
+const QRCode = require('qrcode');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// --- KREDENSIAL ADMIN (JANGAN GUNAKAN DI PRODUKSI) ---
+const adminUsername = 'lan';
+const adminPassword = '1'; // Ganti!
+// --- END KREDENSIAL ADMIN ---
+
 // Middleware
-app.use(express.json()); // Parse JSON request bodies
-app.use(express.urlencoded({ extended: true })); // Parse URL-encoded request bodies
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(express.static('public')); // Serve static files (CSS, JS) from 'public' folder (not used in this version)
 
 // Konfigurasi Session
 app.use(
@@ -21,22 +24,22 @@ app.use(
         resave: false,
         saveUninitialized: false,
         cookie: {
-            secure: false, // Set to true if using HTTPS
-            httpOnly: true, // Prevent client-side access to the cookie
+            secure: true, // Set to true if using HTTPS
+            httpOnly: true,
             maxAge: 1000 * 60 * 60, // 1 jam
         },
     })
 );
 
-// Dummy database (sebaiknya gunakan database nyata)
+// --- DUMMY DATABASE (Ganti dengan database nyata) ---
 const users = []; // { id, username, passwordHash, isAdmin, balance }
 let nextUserId = 1;
 const transactions = []; // { id, userId, amount, currency, description, status, timestamp, paymentMethod, allpayQrData }
+// --- END DUMMY DATABASE ---
 
 // Middleware Authentication
 const authMiddleware = (req, res, next) => {
     if (req.session && req.session.userId) {
-        // User is authenticated
         next();
     } else {
         res.status(401).json({ error: 'Unauthorized: Please login.' });
@@ -45,25 +48,20 @@ const authMiddleware = (req, res, next) => {
 
 // Middleware Admin
 const adminMiddleware = (req, res, next) => {
-    if (req.session && req.session.userId) {
-        const user = users.find((u) => u.id === req.session.userId);
-        if (user && user.isAdmin) {
-            next();
-        } else {
-            res.status(403).json({ error: 'Forbidden: Admin access required.' });
-        }
+    if (req.session && req.session.userId && req.session.isAdmin) {  // Periksa isAdmin di sesi
+        next();
     } else {
-        res.status(401).json({ error: 'Unauthorized: Please login.' });
+        res.status(403).json({ error: 'Forbidden: Admin access required.' });
     }
 };
 
-// Endpoint untuk menampilkan halaman utama (index.html)
+// --- API ENDPOINTS ---
+// Serve index.html
 app.get('/', (req, res) => {
-    // Serve index.html.  You'll need to create this file.
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// Endpoint Register
+// Register
 app.post('/register', async (req, res) => {
     const { username, password } = req.body;
 
@@ -72,7 +70,7 @@ app.post('/register', async (req, res) => {
     }
 
     if (users.some(user => user.username === username)) {
-      return res.status(400).json({ error: 'Username already exists.' });
+        return res.status(400).json({ error: 'Username already exists.' });
     }
 
     try {
@@ -81,8 +79,8 @@ app.post('/register', async (req, res) => {
             id: nextUserId++,
             username,
             passwordHash,
-            isAdmin: users.length === 0, // Pertama kali daftar, jadi admin
-            balance: 0, // Initial balance
+            isAdmin: users.length === 0, // Pertama daftar, jadi admin (sementara)
+            balance: 0,
         };
         users.push(newUser);
         console.log('User registered:', newUser.username);
@@ -93,7 +91,7 @@ app.post('/register', async (req, res) => {
     }
 });
 
-// Endpoint Login
+// Login
 app.post('/login', async (req, res) => {
     const { username, password } = req.body;
 
@@ -102,26 +100,52 @@ app.post('/login', async (req, res) => {
     }
 
     const user = users.find(user => user.username === username);
-    if (!user) {
-        return res.status(400).json({ error: 'Invalid credentials.' });
-    }
+    let isAdmin = false; // Flag untuk admin
 
     try {
-        const passwordMatch = await bcrypt.compare(password, user.passwordHash);
-        if (passwordMatch) {
-            req.session.userId = user.id; // Create session
-            console.log('User logged in:', user.username);
-            res.json({ message: 'Login successful.', userId: user.id, username: user.username, isAdmin: user.isAdmin });
+         // --- Check for hardcoded admin credentials (DANGEROUS) ---
+         if (username === adminUsername && password === adminPassword) {
+            // Hardcoded admin login
+            isAdmin = true;
+            // Buat user "admin" (jika belum ada) - ini tidak aman, tapi diperlukan untuk dummy DB
+            if (!user) {
+              const newUser = { id: nextUserId++, username: adminUsername, passwordHash: 'dummy', isAdmin: true, balance: 999999999 }; // Hardcoded admin balance
+              users.push(newUser);
+              req.session.userId = newUser.id;
+              req.session.isAdmin = true;
+            } else {
+                req.session.userId = user.id;
+                req.session.isAdmin = true;
+            }
+
+        } else if (user) {
+            // Standard login
+            const passwordMatch = await bcrypt.compare(password, user.passwordHash);
+            if (passwordMatch) {
+                req.session.userId = user.id;
+                req.session.isAdmin = user.isAdmin; // Set isAdmin dari DB
+            }
+        }
+        // ... (Sisa kode login, termasuk membuat sesi) ...
+        if (req.session.userId) {
+            const user = users.find(u => u.id === req.session.userId);
+            if(user){
+                res.json({ message: 'Login successful.', userId: user.id, username: user.username, isAdmin: req.session.isAdmin});
+            } else {
+                res.status(404).json({ error: 'User not found' });
+            }
+
         } else {
             res.status(400).json({ error: 'Invalid credentials.' });
         }
+
     } catch (error) {
         console.error('Error logging in user:', error);
         res.status(500).json({ error: 'Login failed.' });
     }
 });
 
-// Endpoint Logout
+// Logout
 app.post('/logout', (req, res) => {
     req.session.destroy((err) => {
         if (err) {
@@ -133,13 +157,13 @@ app.post('/logout', (req, res) => {
     });
 });
 
-// Endpoint Profile (protected)
+// Profile (protected)
 app.get('/profile', authMiddleware, (req, res) => {
     const user = users.find(u => u.id === req.session.userId);
     if (user) {
         res.json({
             username: user.username,
-            balance: user.balance, // Contoh
+            balance: user.balance,
             isAdmin: user.isAdmin,
             // ... other profile information
         });
@@ -148,13 +172,12 @@ app.get('/profile', authMiddleware, (req, res) => {
     }
 });
 
-// Endpoint untuk generate QR code pembayaran yang bisa di-scan ke all payment
+// Generate QR (protected)
 app.post('/api/allpay-qr', authMiddleware, async (req, res) => {
-    const { amount, currency = 'IDR', description, paymentMethod } = req.body; // Ex: DANA, Gopay
+    const { amount, currency = 'IDR', description, paymentMethod } = req.body;
     const userId = req.session.userId;
     const user = users.find(u => u.id === userId);
 
-    // --- Validasi Input ---
     if (!amount || isNaN(parseFloat(amount)) || parseFloat(amount) <= 0) {
         return res.status(400).json({ error: 'Invalid or missing "amount" parameter. Must be a positive number.' });
     }
@@ -163,12 +186,10 @@ app.post('/api/allpay-qr', authMiddleware, async (req, res) => {
         return res.status(400).json({ error: 'Payment method is required.' });
     }
 
-    // 1. Generate Transaction ID (Unik)
     const transactionId = `PM-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
 
-    // 2. Format Data untuk All Payment (contoh: DANA)
-    // Ini akan bervariasi tergantung pada layanan pembayaran
-    // Anda perlu berkonsultasi dengan dokumentasi layanan
+    // --- Integrasi ALLPAY - Ganti dengan implementasi sebenarnya ---
+    // (Contoh untuk DANA, harus sesuai API DANA)
     let allpayQrData;
     if (paymentMethod.toLowerCase() === 'dana') {
       const danaPayload = {
@@ -180,11 +201,13 @@ app.post('/api/allpay-qr', authMiddleware, async (req, res) => {
         // ... other required parameters by DANA
       };
       //console.log(JSON.stringify(danaPayload));
-       // 3.  Generate QR code using AllPay (example)
+       // Generate QR code using AllPay (example)
         try {
            // const qrCodeBase64 = await allpayProvider.generateDanaQr(danaPayload); // Function in allpayProvider.js
            // Hardcode base64 supaya tidak harus register ke payment gateway
            const qrCodeBase64 = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMgAAADIAQMAAABNJi44AAAABGdBTUEAALGPC/cAAAACBJREFUCNdjYGBgEAj4gJzCgYGNjAAALtQBB3j7pXIAAAAASUVORK5CYII=';
+
+            // Simpan Transaksi (dengan allpayQrData)
             const newTransaction = {
                 id: transactions.length + 1,
                 userId: userId,
@@ -222,9 +245,9 @@ app.post('/api/allpay-qr', authMiddleware, async (req, res) => {
     }
 });
 
-
 // Admin Dashboard (protected)
 app.get('/admin/dashboard', adminMiddleware, (req, res) => {
+    // Dashboard admin
     const totalUsers = users.length;
     const totalTransactions = transactions.length;
     res.json({ totalUsers, totalTransactions });
@@ -235,8 +258,17 @@ app.get('/admin/transactions', adminMiddleware, (req, res) => {
     res.json({ transactions });
 });
 
+// --- Error Handling ---
+app.use((req, res, next) => {
+    res.status(404).json({ error: 'Not Found' }); // Changed for JSON response
+});
 
-// Start the server
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    res.status(500).json({ error: 'Internal Server Error' });  // Changed for JSON response
+});
+
+// --- Jalankan Server ---
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
 });
