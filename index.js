@@ -4,7 +4,8 @@ const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
 const session = require('express-session');
-const axios = require('axios'); // Untuk melakukan HTTP request ke endpoint
+const axios = require('axios');
+const cors = require('cors'); // Import modul cors
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -14,11 +15,24 @@ app.use(bodyParser.json());
 
 // Konfigurasi Session
 app.use(session({
-  secret: process.env.SESSION_SECRET || 'wanzofc-secret',
-  resave: false,
-  saveUninitialized: false,
-  cookie: { secure: false }
+    secret: process.env.SESSION_SECRET || 'wanzofc-secret',
+    resave: false,
+    saveUninitialized: false,
+    cookie: { secure: false }
 }));
+
+// Aktifkan CORS untuk semua origin (HANYA UNTUK PENGEMBANGAN.  BATASI DI PRODUKSI!)
+app.use(cors());
+
+// Atau, untuk membatasi origin (contoh):
+// const corsOptions = {
+//   origin: 'https://wanzofc-update-production.up.railway.app', // Ganti dengan domain Anda
+//   methods: 'GET,POST', // Batasi metode HTTP
+//   allowedHeaders: ['Content-Type', 'x-api-key'] // Batasi header
+// };
+// app.use(cors(corsOptions));
+
+
 
 // Path untuk menyimpan data
 const dataFilePath = path.join(__dirname, 'data.json');
@@ -41,7 +55,7 @@ function readData() {
             users: [],
             apiKeys: [],
             admin: { username: 'awan', password: 'awan1' },
-            runningText: 'Selamat Datang di Wanzofc API!',
+            runningText: 'Gagal memuat running text!',
             redemptionCodes: [],
             customApiKeys: []
         };
@@ -51,7 +65,7 @@ function readData() {
             users: [],
             apiKeys: [],
             admin: { username: 'awan', password: 'awan1' },
-            runningText: 'Selamat Datang di Wanzofc API!',
+            runningText: 'Gagal memuat running text!',
             redemptionCodes: [],
             customApiKeys: []
         };
@@ -324,10 +338,9 @@ app.get('/api/runningtext', (req, res) => {
     res.json({ runningText: data.runningText });
 });
 
-
-// Endpoint untuk testing API
-app.get('/api/checkgopay', authenticateApiKey, async (req, res) => {
-    const accountNumber = req.query.account_number; // Ambil parameter dari query string
+// Endpoint untuk Testing API (diubah)
+app.post('/api/checkgopay', authenticateApiKey, async (req, res) => {  // Mengubah dari GET menjadi POST
+    const accountNumber = req.body.account_number; // Ambil dari body
     if (!accountNumber) {
         return res.status(400).json({ status: false, error: 'Parameter "account_number" diperlukan.' });
     }
@@ -335,9 +348,6 @@ app.get('/api/checkgopay', authenticateApiKey, async (req, res) => {
     try {
         const response = await axios.get('https://api.siputzx.my.id/api/check/gopay', {
             params: { account_number: accountNumber },
-            headers: {
-                'x-api-key': req.headers['x-api-key'] // Pastikan meneruskan API Key
-            }
         });
 
         res.json(response.data); // Kirim response dari API eksternal
@@ -365,7 +375,7 @@ app.get('/admin.html', (req, res) => {
   if (req.session && req.session.isAdmin) {
     res.sendFile(path.join(__dirname, 'admin.html'));
   } else {
-    res.redirect('/login.html'); // Redirect to login if not admin
+    res.redirect('/admin.html'); // Redirect to login if not admin
   }
 });
 
