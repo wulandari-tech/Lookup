@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin - Wanzofc Rest API</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         /* CSS Internal */
         body {
@@ -142,6 +143,14 @@
     </header>
 
     <div class="container">
+        <h2><i class="fas fa-comment-alt"></i> Teks Berjalan</h2>
+        <div class="form-group">
+            <label for="runningText">Teks:</label>
+            <input type="text" id="runningText" placeholder="Masukkan teks berjalan">
+        </div>
+        <button id="updateRunningTextBtn"><i class="fas fa-sync-alt"></i> Perbarui Teks</button>
+        <p id="runningTextResult"></p>
+
         <h2><i class="fas fa-key"></i> Buat API Key Baru</h2>
         <div class="form-group">
             <label for="username"><i class="fas fa-user"></i> Username:</label>
@@ -154,10 +163,49 @@
         <button id="createApiKeyBtn"><i class="fas fa-plus"></i> Buat API Key</button>
         <p id="createApiKeyResult"></p>
 
+        <h2><i class="fas fa-gift"></i> Buat Kode Redeem</h2>
+        <div class="form-group">
+            <label for="redeemCode">Kode:</label>
+            <input type="text" id="redeemCode" placeholder="Masukkan kode redeem" required>
+        </div>
+        <div class="form-group">
+            <label for="redeemUsername">Username:</label>
+            <input type="text" id="redeemUsername" placeholder="Masukkan username untuk kode redeem" required>
+        </div>
+        <button id="createRedeemCodeBtn"><i class="fas fa-plus"></i> Buat Kode Redeem</button>
+        <p id="createRedeemCodeResult"></p>
+
+        <h2><i class="fas fa-key"></i> Buat API Key Kustom</h2>
+        <div class="form-group">
+            <label for="customUsername">Username:</label>
+            <input type="text" id="customUsername" placeholder="Masukkan username" required>
+        </div>
+        <div class="form-group">
+            <label for="customApiKey">API Key:</label>
+            <input type="text" id="customApiKey" placeholder="Masukkan API Key" required>
+        </div>
+        <div class="form-group">
+            <label for="customExpirationDays"><i class="fas fa-calendar-alt"></i> Lama Berlaku (hari):</label>
+            <input type="number" id="customExpirationDays" value="7">
+        </div>
+        <button id="createCustomApiKeyBtn"><i class="fas fa-plus"></i> Buat API Key Kustom</button>
+        <p id="createCustomApiKeyResult"></p>
+
         <h2><i class="fas fa-list"></i> Daftar API Key</h2>
         <ul id="apiKeyList" class="api-key-list">
             <!-- API Keys akan ditampilkan di sini -->
         </ul>
+
+        <h2><i class="fas fa-ticket-alt"></i> Daftar Kode Redeem</h2>
+        <ul id="redeemCodeList" class="api-key-list">
+            <!-- Daftar Kode Redeem -->
+        </ul>
+
+        <h2><i class="fas fa-key"></i> Daftar API Key Kustom</h2>
+        <ul id="customApiKeyList" class="api-key-list">
+           <!-- Daftar API Key Kustom -->
+        </ul>
+
         <button id="logoutButton" class="logout-button"><i class="fas fa-sign-out-alt"></i> Logout</button>
     </div>
 
@@ -169,6 +217,21 @@
         const createApiKeyResult = document.getElementById('createApiKeyResult');
         const apiKeyList = document.getElementById('apiKeyList');
         const logoutButton = document.getElementById('logoutButton');
+        const runningTextInput = document.getElementById('runningText');
+        const updateRunningTextBtn = document.getElementById('updateRunningTextBtn');
+        const runningTextResult = document.getElementById('runningTextResult');
+        const redeemCodeInput = document.getElementById('redeemCode');
+        const redeemUsernameInput = document.getElementById('redeemUsername');
+        const createRedeemCodeBtn = document.getElementById('createRedeemCodeBtn');
+        const createRedeemCodeResult = document.getElementById('createRedeemCodeResult');
+        const redeemCodeList = document.getElementById('redeemCodeList');
+        const customUsernameInput = document.getElementById('customUsername');
+        const customApiKeyInput = document.getElementById('customApiKey');
+        const customExpirationDaysInput = document.getElementById('customExpirationDays');
+        const createCustomApiKeyBtn = document.getElementById('createCustomApiKeyBtn');
+        const createCustomApiKeyResult = document.getElementById('createCustomApiKeyResult');
+        const customApiKeyList = document.getElementById('customApiKeyList');
+
 
         // Fungsi untuk menampilkan pesan
         function showMessage(message, type) {
@@ -176,9 +239,23 @@
             messageElement.className = `message ${type}-message`;
             messageElement.textContent = message;
             createApiKeyResult.innerHTML = ''; // Bersihkan pesan sebelumnya
-            createApiKeyResult.appendChild(messageElement);
+            runningTextResult.innerHTML = ''; // Bersihkan pesan sebelumnya
+            createRedeemCodeResult.innerHTML = ''; //Bersihkan pesan sebelumnya
+            createCustomApiKeyResult.innerHTML = '';//Bersihkan pesan sebelumnya
+            if(type == 'error')
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops...',
+                    text: message,
+                })
+            else
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success!',
+                    text: message,
+                })
+            //createApiKeyResult.appendChild(messageElement);
         }
-
 
         // Fungsi untuk menampilkan daftar API Keys
         async function fetchApiKeys() {
@@ -200,6 +277,45 @@
                 console.error('Error fetching API keys:', error);
             }
         }
+
+        // Fungsi untuk menampilkan daftar Kode Redeem
+        async function fetchRedeemCodes() {
+            try {
+                const response = await fetch('/ADM/redeemcodes');
+                const redeemCodes = await response.json();
+                redeemCodeList.innerHTML = ''; // Bersihkan daftar
+                redeemCodes.forEach(code => {
+                    const listItem = document.createElement('li');
+                    listItem.classList.add('api-key-item');
+                    listItem.innerHTML = `
+                        <span><i class="fas fa-gift"></i> Kode: ${code.code}, Username: ${code.username}, Digunakan: ${code.used ? 'Ya' : 'Tidak'}</span>
+                    `;
+                    redeemCodeList.appendChild(listItem);
+                });
+            } catch (error) {
+                console.error('Error fetching redeem codes:', error);
+            }
+        }
+
+         // Fungsi untuk menampilkan daftar API Key Kustom
+        async function fetchCustomApiKeys() {
+            try {
+                const response = await fetch('/ADM/customapikeys');
+                const customApiKeys = await response.json();
+                customApiKeyList.innerHTML = ''; // Bersihkan daftar
+                customApiKeys.forEach(key => {
+                    const listItem = document.createElement('li');
+                    listItem.classList.add('api-key-item');
+                    listItem.innerHTML = `
+                        <span><i class="fas fa-user-secret"></i> Username: ${key.username}, Key: ${key.key}</span>
+                    `;
+                    customApiKeyList.appendChild(listItem);
+                });
+            } catch (error) {
+                console.error('Error fetching custom API keys:', error);
+            }
+        }
+
 
         // Fungsi untuk membuat API Key
         createApiKeyBtn.addEventListener('click', async () => {
@@ -233,6 +349,106 @@
                 console.error('Error:', error);
             }
         });
+
+        // Fungsi untuk membuat Kode Redeem
+        createRedeemCodeBtn.addEventListener('click', async () => {
+            const code = redeemCodeInput.value;
+            const username = redeemUsernameInput.value;
+
+            if (!code || !username) {
+                showMessage('Kode dan Username harus diisi.', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch('/ADM/redeemcode', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ code, username })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showMessage(`Kode redeem ${code} berhasil dibuat untuk ${username}.`, 'success');
+                    fetchRedeemCodes(); // Refresh daftar kode redeem
+                } else {
+                    showMessage(`Error: ${data.message}`, 'error');
+                }
+            } catch (error) {
+                showMessage('Terjadi kesalahan saat membuat kode redeem.', 'error');
+                console.error('Error:', error);
+            }
+        });
+
+        // Fungsi untuk membuat API Key Kustom
+        createCustomApiKeyBtn.addEventListener('click', async () => {
+            const username = customUsernameInput.value;
+            const apiKey = customApiKeyInput.value;
+            const expirationDays = customExpirationDaysInput.value;
+
+            if (!username || !apiKey) {
+                showMessage('Username dan API Key harus diisi.', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch('/ADM/createcustomkey', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username, apiKey, expirationDays })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showMessage(`API Key kustom untuk ${username} berhasil dibuat.`, 'success');
+                    fetchCustomApiKeys(); // Refresh daftar API keys
+                } else {
+                    showMessage(`Error: ${data.message}`, 'error');
+                }
+            } catch (error) {
+                showMessage('Terjadi kesalahan saat membuat API Key kustom.', 'error');
+                console.error('Error:', error);
+            }
+        });
+
+        // Fungsi untuk mengubah teks berjalan
+        updateRunningTextBtn.addEventListener('click', async () => {
+            const text = runningTextInput.value;
+
+            if (!text) {
+                showMessage('Teks harus diisi.', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch('/ADM/runningtext', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ text })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showMessage('Teks berjalan berhasil diperbarui.', 'success');
+                    // Optionally, refresh the running text on the index.html
+                } else {
+                    showMessage(`Error: ${data.message}`, 'error');
+                }
+            } catch (error) {
+                showMessage('Terjadi kesalahan saat memperbarui teks berjalan.', 'error');
+                console.error('Error:', error);
+            }
+        });
+
 
         // Fungsi untuk menghapus API Key
         async function deleteApiKey(username) {
@@ -270,7 +486,11 @@
         }
 
         // Load API keys saat halaman dimuat
-        fetchApiKeys();
+        document.addEventListener('DOMContentLoaded', async () => {
+            await fetchApiKeys();
+            await fetchRedeemCodes();
+            await fetchCustomApiKeys();
+        });
 
         logoutButton.addEventListener('click', () => {
             window.location.href = '/logout'; // Redirect ke /logout
