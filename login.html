@@ -117,10 +117,19 @@
                 const data = await response.json();
 
                 if (data.success) {
-                    loginMessage.textContent = 'Login berhasil! Mengarahkan...'; // Feedback
-                    setTimeout(() => {
-                        window.location.href = '/admin.html'; // Redirect
-                    }, 1500); // Delay sedikit
+                    // Simpan API key ke localstorage
+                    const getApiKeyResponse = await fetch('/api/getkey', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ username, password })
+                    });
+                    const getApiKeyData = await getApiKeyResponse.json();
+                    if (getApiKeyData.success) {
+                         localStorage.setItem('apiKey', getApiKeyData.apiKey); // Simpan API Key di Local Storage
+                    }
+                    window.location.href = '/'; // Redirect ke halaman utama
                 } else {
                     loginMessage.textContent = data.message;
                 }
