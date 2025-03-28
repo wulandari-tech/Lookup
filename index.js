@@ -13,7 +13,7 @@ const port = process.env.PORT || 3000;
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
-// Konfigurasi Session
+// Konfigurasi Session (Opsional, tetapi tetap diperlukan untuk fungsi lain jika ada)
 app.use(session({
     secret: process.env.SESSION_SECRET || 'wanzofc-secret',
     resave: false,
@@ -54,7 +54,7 @@ function readData() {
         return {
             users: [],
             apiKeys: [],
-            admin: { username: 'awan', password: 'awan1' },
+            admin: { username: 'awan, password: 'awan1' },
             runningText: 'Gagal memuat running text!',
             redemptionCodes: [],
             customApiKeys: []
@@ -85,14 +85,6 @@ function generateApiKey(length = 6) {
 }
 
 
-// Middleware Autentikasi Admin
-function authenticateAdmin(req, res, next) {
-  if (!req.session || !req.session.isAdmin) {
-    return res.status(401).send('Unauthorized');
-  }
-  next();
-}
-
 // Middleware Autentikasi API Key
 function authenticateApiKey(req, res, next) {
     const apiKey = req.headers['x-api-key'];
@@ -120,26 +112,6 @@ function authenticateApiKey(req, res, next) {
 
 }
 
-// Route untuk Login (masih diperlukan, tetapi tidak digunakan untuk admin login)
-app.post('/login', (req, res) => {
-    const { username, password } = req.body;
-    if (username === data.admin.username && password === data.admin.password) {
-      req.session.isAdmin = true;
-      res.json({ success: true, message: 'Login berhasil' });
-    } else {
-      res.status(401).json({ success: false, message: 'Username atau password salah' });
-    }
-  });
-
-  // Route untuk Logout
-  app.get('/logout', (req, res) => {
-    req.session.destroy(err => {
-      if (err) {
-        return res.status(500).send('Gagal logout');
-      }
-      res.redirect('/login.html');
-    });
-  });
 
 // Route untuk Sign Up
 app.post('/signup', (req, res) => {
@@ -223,7 +195,7 @@ app.post('/api/redeem', (req, res) => {
 
 
 // Route untuk Admin - Mengelola Teks Berjalan
-app.post('/ADM/runningtext', authenticateAdmin, (req, res) => {
+app.post('/ADM/runningtext', (req, res) => {  // Hapus authentication
     const { text } = req.body;
     if (!text) {
         return res.status(400).json({ success: false, message: 'Teks harus diisi' });
@@ -234,7 +206,7 @@ app.post('/ADM/runningtext', authenticateAdmin, (req, res) => {
 });
 
 // Route untuk Admin - Membuat Kode Redeem
-app.post('/ADM/redeemcode', authenticateAdmin, (req, res) => {
+app.post('/ADM/redeemcode', (req, res) => { // Hapus authentication
   const { code, username } = req.body;
 
   if (!code || !username) {
@@ -252,7 +224,7 @@ app.post('/ADM/redeemcode', authenticateAdmin, (req, res) => {
 });
 
 // Route untuk Admin - Membuat API Key Kustom
-app.post('/ADM/createcustomkey', authenticateAdmin, (req, res) => {
+app.post('/ADM/createcustomkey', (req, res) => { // Hapus authentication
     const { username, apiKey, expirationDays } = req.body;
 
     if (!username || !apiKey) {
@@ -282,23 +254,23 @@ app.post('/ADM/createcustomkey', authenticateAdmin, (req, res) => {
 });
 
 // Route untuk Admin - Mendapatkan daftar kode redeem
-app.get('/ADM/redeemcodes', authenticateAdmin, (req, res) => {
+app.get('/ADM/redeemcodes', (req, res) => {  // Hapus authentication
   res.json(data.redemptionCodes);
 });
 
 // Route untuk Admin - Mendapatkan daftar API Key Kustom
-app.get('/ADM/customapikeys', authenticateAdmin, (req, res) => {
+app.get('/ADM/customapikeys', (req, res) => { // Hapus authentication
   res.json(data.customApiKeys);
 });
 
 
 // Route untuk melihat semua API Key (hanya untuk admin)
-app.get('/ADM/keys', authenticateAdmin, (req, res) => {
+app.get('/ADM/keys', (req, res) => { // Hapus authentication
   res.json(data.apiKeys);
 });
 
 // Route untuk menghapus API Key (hanya untuk admin)
-app.post('/ADM/deletekey', authenticateAdmin, (req, res) => {
+app.post('/ADM/deletekey', (req, res) => { // Hapus authentication
   const { username } = req.body;
 
   data.apiKeys = data.apiKeys.filter(key => key.username !== username);
@@ -307,7 +279,7 @@ app.post('/ADM/deletekey', authenticateAdmin, (req, res) => {
 });
 
 // Route untuk mendapatkan informasi API Key (hanya untuk admin)
-app.get('/ADM/keyinfo/:username', authenticateAdmin, (req, res) => {
+app.get('/ADM/keyinfo/:username', (req, res) => { // Hapus authentication
   const { username } = req.params;
   const apiKey = data.apiKeys.find(key => key.username === username);
 
