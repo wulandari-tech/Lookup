@@ -238,10 +238,9 @@
         <button id="redeemCodeBtn" class="api-key-button"><i class="fas fa-gift"></i> Kode Redeem</button>
 
 
-
         <div id="apiKeyModal" class="modal">
             <div class="modal-content">
-                <span class="close">×</span>
+                <span class="close">&times;</span>
                 <h2><i class="fas fa-sign-in-alt"></i> Masukkan Username dan Password</h2>
                 <input type="text" id="username" placeholder="Username" required>
                 <input type="password" id="password" placeholder="Password" required>
@@ -252,7 +251,7 @@
 
         <div id="redeemCodeModal" class="modal">
             <div class="modal-content">
-                <span class="close">×</span>
+                <span class="close">&times;</span>
                 <h2><i class="fas fa-gift"></i> Masukkan Kode Redeem</h2>
                 <input type="text" id="redeemCode" placeholder="Kode Redeem" required>
                 <button id="submitRedeemCode"><i class="fas fa-check"></i> Gunakan Kode</button>
@@ -442,8 +441,8 @@
                 {
                     name: 'Check Gopay',
                     description: 'Memeriksa informasi Gopay.',
-                    method: 'GET',
-                    url: 'https://api.siputzx.my.id/api/check/gopay?account_number=', // Tambahkan parameter account_number saat mencoba
+                    method: 'POST', // Gunakan POST karena kita mengirim data
+                    url: '/api/checkgopay', // Gunakan route di backend
                     params: [{ name: 'account_number', description: 'Nomor akun Gopay' }]
                 }
             ];
@@ -497,12 +496,12 @@
                             if (result.isConfirmed) {
                                 const paramValues = result.value;
                                 // Build URL dengan parameter
-                                let finalUrl = url;
-                                if (method.toUpperCase() === 'GET' && Object.keys(paramValues).length > 0) {
-                                    finalUrl += Object.keys(paramValues).map(key => `${key}=${encodeURIComponent(paramValues[key])}`).join('&');
-                                }
+                                // let finalUrl = url;
+                                // if (method.toUpperCase() === 'GET' && Object.keys(paramValues).length > 0) {
+                                //     finalUrl += Object.keys(paramValues).map(key => `${key}=${encodeURIComponent(paramValues[key])}`).join('&');
+                                // }
 
-                                await callEndpoint(endpoint.name, method, finalUrl);
+                                await callEndpoint(endpoint.name, method, url, paramValues);
                             }
                         });
                     } else {
@@ -513,7 +512,7 @@
         }
 
         // Fungsi untuk memanggil endpoint dan menampilkan response
-        async function callEndpoint(endpointName, method, url) {
+        async function callEndpoint(endpointName, method, url, params = {}) {
             const responseAreaId = `response-${endpointName.replace(/\s+/g, '-').toLowerCase()}`;
             const responseArea = document.getElementById(responseAreaId);
             responseArea.innerHTML = '<p>Loading...</p>'; // Menampilkan loading saat menunggu response
@@ -532,11 +531,21 @@
 
                 let response;
                 if (method.toUpperCase() === 'GET') {
-                    response = await fetch(url, {
+                    // Jika metode GET, tambahkan parameter ke URL
+                    const queryParams = new URLSearchParams(params).toString();
+                    const finalUrl = queryParams ? `${url}?${queryParams}` : url;
+                    response = await fetch(finalUrl, {
                         method: method,
                         headers: headers
                     });
-                } else {
+                } else if (method.toUpperCase() === 'POST') {
+                    // Jika metode POST, kirimkan data dalam body
+                    response = await fetch(url, {
+                        method: method,
+                        headers: headers,
+                        body: JSON.stringify(params) // Kirim parameter sebagai JSON
+                    });
+                }else {
                    // Tambahkan penanganan metode lain (POST, PUT, DELETE, dll.) jika diperlukan
                    responseArea.innerHTML = '<p class="error-message">Metode HTTP tidak didukung.</p>';
                    return;
