@@ -34,7 +34,7 @@ function readData() {
             writeData({
                 users: [],
                 apiKeys: [],
-                admin: { username: 'awan', password: 'awan1' },
+                admin: { username: 'awan', password: 'awan1' }, // Perbaikan: Hilangkan koma setelah 'awan'
                 runningText: 'Selamat Datang di Wanzofc API!',
                 redemptionCodes: [], // Tambahkan array untuk kode redeem
                 customApiKeys: [] // Tambahkan array untuk API Key kustom
@@ -44,7 +44,7 @@ function readData() {
         return JSON.parse(data) || {
             users: [],
             apiKeys: [],
-            admin: { username: 'awan', password: 'awan1' },
+            admin: { username: 'awan', password: 'awan1' }, // Perbaikan: Hilangkan koma setelah 'awan'
             runningText: 'Gagal memuat running text!',
             redemptionCodes: [],
             customApiKeys: []
@@ -54,7 +54,7 @@ function readData() {
         return {
             users: [],
             apiKeys: [],
-            admin: { username: 'awan, password: 'awan1' },
+            admin: { username: 'awan', password: 'awan1' }, // Perbaikan: Hilangkan koma setelah 'awan'
             runningText: 'Gagal memuat running text!',
             redemptionCodes: [],
             customApiKeys: []
