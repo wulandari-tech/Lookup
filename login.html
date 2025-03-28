@@ -129,7 +129,8 @@
                     if (getApiKeyData.success) {
                          localStorage.setItem('apiKey', getApiKeyData.apiKey); // Simpan API Key di Local Storage
                     }
-                    window.location.href = '/'; // Redirect ke halaman utama
+                    // window.location.href = '/'; // Redirect ke halaman utama
+                    window.location.href = '/';  // Redirect ke halaman utama
                 } else {
                     loginMessage.textContent = data.message;
                 }
