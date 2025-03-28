@@ -349,10 +349,6 @@ app.post('/api/checkgopay', authenticateApiKey, async (req, res) => {  // Mengub
 
 // Route untuk mengakses halaman admin (tanpa login)
 app.get('/admin', (req, res) => {
-  if (!req.session.isAdmin) {
-    // Redirect ke halaman login jika belum login
-    return res.redirect('/login.html');
-  }
   res.sendFile(path.join(__dirname, 'admin.html'));
 });
 
