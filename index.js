@@ -13,7 +13,7 @@ const port = process.env.PORT || 3000;
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
-// Konfigurasi Session (Opsional, tetapi tetap diperlukan untuk fungsi lain jika ada)
+// Konfigurasi Session
 app.use(session({
     secret: process.env.SESSION_SECRET || 'wanzofc-secret',
     resave: false,
@@ -34,18 +34,18 @@ function readData() {
             writeData({
                 users: [],
                 apiKeys: [],
-                admin: { username: 'awan', password: 'awan1' }, // Perbaikan: Hilangkan koma setelah 'awan'
-                runningText: 'Selamat Datang di Wanzofc API!',
-                redemptionCodes: [], // Tambahkan array untuk kode redeem
-                customApiKeys: [] // Tambahkan array untuk API Key kustom
+                admin: { username: 'awan', password: 'awan1' },
+                runningText: {}, // Teks berjalan per user
+                redemptionCodes: [], // Kode redeem
+                customApiKeys: [] // API Key kustom
             });
         }
         const data = fs.readFileSync(dataFilePath, 'utf8');
         return JSON.parse(data) || {
             users: [],
             apiKeys: [],
-            admin: { username: 'awan', password: 'awan1' }, // Perbaikan: Hilangkan koma setelah 'awan'
-            runningText: 'Gagal memuat running text!',
+            admin: { username: 'awan', password: 'awan1' },
+            runningText: {}, // Teks berjalan per user
             redemptionCodes: [],
             customApiKeys: []
         };
@@ -54,8 +54,8 @@ function readData() {
         return {
             users: [],
             apiKeys: [],
-            admin: { username: 'awan', password: 'awan1' }, // Perbaikan: Hilangkan koma setelah 'awan'
-            runningText: 'Gagal memuat running text!',
+            admin: { username: 'awan', password: 'awan1' },
+            runningText: {}, // Teks berjalan per user
             redemptionCodes: [],
             customApiKeys: []
         };
@@ -84,7 +84,6 @@ function generateApiKey(length = 6) {
     return apiKey;
 }
 
-
 // Middleware Autentikasi API Key
 function authenticateApiKey(req, res, next) {
     const apiKey = req.headers['x-api-key'];
@@ -93,23 +92,22 @@ function authenticateApiKey(req, res, next) {
         return res.status(401).json({ success: false, message: 'API Key tidak ditemukan' });
     }
 
-    // Cari API Key di data.apiKeys
-    const validApiKey = data.apiKeys.find(key => key.key === apiKey);
-    if (validApiKey) {
-        // Key ditemukan, lanjutkan
-        return next();
+    let validApiKey;
+    // Prioritaskan API Key kustom
+    validApiKey = data.customApiKeys.find(key => key.key === apiKey);
+
+    if (!validApiKey) {
+        // Jika tidak ada API key kustom, cari API key default
+        validApiKey = data.apiKeys.find(key => key.key === apiKey);
     }
 
-    // Periksa API Key kustom (jika ada)
-    const customApiKey = data.customApiKeys.find(key => key.key === apiKey);
 
-    if(customApiKey) {
+    if (validApiKey) {
         return next();
     }
 
     // Jika tidak ditemukan
     return res.status(401).json({ success: false, message: 'API Key tidak valid' });
-
 }
 
 
@@ -131,15 +129,61 @@ app.post('/signup', (req, res) => {
   res.json({ success: true, message: 'Registrasi berhasil, silakan login' });
 });
 
-// Route untuk mendapatkan API Key (setelah login/daftar)
-app.post('/api/getkey', (req, res) => {
+// Route untuk Login
+app.post('/login', (req, res) => {
     const { username, password } = req.body;
-
     const user = data.users.find(u => u.username === username && u.password === password);
 
     if (!user) {
         return res.status(401).json({ success: false, message: 'Username atau password salah' });
     }
+
+    // Set session setelah login berhasil
+    req.session.loggedIn = true;
+    req.session.username = username; // Simpan username di session
+
+    // Dapatkan API Key (prioritaskan API Key kustom)
+    let apiKey = '';
+    const customApiKey = data.customApiKeys.find(key => key.username === username);
+    if (customApiKey) {
+        apiKey = customApiKey.key;
+    } else {
+        // Jika tidak ada API Key kustom, buat atau gunakan yang sudah ada
+        let apiKeyData = data.apiKeys.find(key => key.username === username);
+        if (!apiKeyData) {
+            const newApiKey = generateApiKey(Math.random() < 0.5 ? 4 : 6);
+            apiKeyData = {
+                username: username,
+                key: newApiKey,
+                expiration: Date.now() + 7 * 24 * 60 * 60 * 1000
+            };
+            data.apiKeys.push(apiKeyData);
+            writeData(data);
+        }
+        apiKey = apiKeyData.key;
+    }
+
+    res.json({ success: true, message: 'Login berhasil', apiKey });
+});
+
+// Route untuk Logout
+app.get('/logout', (req, res) => {
+    req.session.destroy(err => {
+        if (err) {
+            return res.status(500).send('Gagal logout');
+        }
+        res.json({ success: true, message: 'Logout berhasil' });
+    });
+});
+
+
+// Route untuk mendapatkan API Key (setelah login/daftar)
+app.post('/api/getkey', (req, res) => {
+    if (!req.session.loggedIn || !req.session.username) {
+        return res.status(401).json({ success: false, message: 'Silakan login terlebih dahulu.' });
+    }
+
+    const username = req.session.username;
 
     // Periksa apakah pengguna sudah memiliki API Key
     let apiKeyData = data.apiKeys.find(key => key.username === username);
@@ -196,11 +240,13 @@ app.post('/api/redeem', (req, res) => {
 
 // Route untuk Admin - Mengelola Teks Berjalan
 app.post('/ADM/runningtext', (req, res) => {  // Hapus authentication
-    const { text } = req.body;
-    if (!text) {
-        return res.status(400).json({ success: false, message: 'Teks harus diisi' });
+    const { username, text } = req.body;
+    if (!username || !text) {
+        return res.status(400).json({ success: false, message: 'Username dan teks harus diisi' });
     }
-    data.runningText = text;
+
+    // Simpan teks berjalan untuk pengguna tertentu
+    data.runningText[username] = text;
     writeData(data);
     res.json({ success: true, message: 'Teks berjalan berhasil diubah' });
 });
@@ -241,20 +287,14 @@ app.post('/ADM/createcustomkey', (req, res) => { // Hapus authentication
         return res.status(400).json({ success: false, message: 'API Key sudah digunakan' });
     }
 
-    const newApiKey = {
-        username: username,
-        key: apiKey,
-        expiration: Date.now() + (expirationDays ? parseInt(expirationDays) : 7) * 24 * 60 * 60 * 1000 // Default 7 hari
-    };
-
-    data.customApiKeys.push(newApiKey);
+    // Simpan API Key kustom
+    data.customApiKeys.push({ username, key: apiKey, expiration: Date.now() + (expirationDays ? parseInt(expirationDays) : 7) * 24 * 60 * 60 * 1000 });
     writeData(data);
-
     res.json({ success: true, message: `API Key kustom untuk ${username} berhasil dibuat` });
 });
 
 // Route untuk Admin - Mendapatkan daftar kode redeem
-app.get('/ADM/redeemcodes', (req, res) => {  // Hapus authentication
+app.get('/ADM/redeemcodes', (req, res) => { // Hapus authentication
   res.json(data.redemptionCodes);
 });
 
@@ -263,10 +303,14 @@ app.get('/ADM/customapikeys', (req, res) => { // Hapus authentication
   res.json(data.customApiKeys);
 });
 
-
 // Route untuk melihat semua API Key (hanya untuk admin)
 app.get('/ADM/keys', (req, res) => { // Hapus authentication
   res.json(data.apiKeys);
+});
+
+// Route untuk melihat daftar users (PERINGATAN: TIDAK AMAN!)
+app.get('/ADM/users', (req, res) => { // Hapus authentication
+    res.json(data.users.map(user => ({ username: user.username, password: user.password })));
 });
 
 // Route untuk menghapus API Key (hanya untuk admin)
@@ -277,6 +321,7 @@ app.post('/ADM/deletekey', (req, res) => { // Hapus authentication
   writeData(data);
   res.json({ success: true, message: `API Key untuk ${username} berhasil dihapus` });
 });
+
 
 // Route untuk mendapatkan informasi API Key (hanya untuk admin)
 app.get('/ADM/keyinfo/:username', (req, res) => { // Hapus authentication
@@ -297,7 +342,9 @@ app.get('/api/protected', authenticateApiKey, (req, res) => {
 
 // Endpoint untuk mendapatkan running text
 app.get('/api/runningtext', (req, res) => {
-    res.json({ runningText: data.runningText });
+    const username = req.session.username;
+    const runningText = data.runningText[username] || 'Selamat datang!'; // Teks default jika tidak ada
+    res.json({ runningText });
 });
 
 // Endpoint untuk Testing API (diubah)
