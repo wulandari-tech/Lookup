@@ -5,7 +5,7 @@ const fs = require('fs');
 const path = require('path');
 const session = require('express-session');
 const axios = require('axios');
-const cors = require('cors'); // Import modul cors
+const cors = require('cors');
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -21,18 +21,8 @@ app.use(session({
     cookie: { secure: false }
 }));
 
-// Aktifkan CORS untuk semua origin (HANYA UNTUK PENGEMBANGAN.  BATASI DI PRODUKSI!)
+// Aktifkan CORS (HANYA UNTUK PENGEMBANGAN.  BATASI DI PRODUKSI!)
 app.use(cors());
-
-// Atau, untuk membatasi origin (contoh):
-// const corsOptions = {
-//   origin: 'https://wanzofc-update-production.up.railway.app', // Ganti dengan domain Anda
-//   methods: 'GET,POST', // Batasi metode HTTP
-//   allowedHeaders: ['Content-Type', 'x-api-key'] // Batasi header
-// };
-// app.use(cors(corsOptions));
-
-
 
 // Path untuk menyimpan data
 const dataFilePath = path.join(__dirname, 'data.json');
@@ -130,7 +120,7 @@ function authenticateApiKey(req, res, next) {
 
 }
 
-// Route untuk Login
+// Route untuk Login (masih diperlukan, tetapi tidak digunakan untuk admin login)
 app.post('/login', (req, res) => {
     const { username, password } = req.body;
     if (username === data.admin.username && password === data.admin.password) {
@@ -357,6 +347,16 @@ app.post('/api/checkgopay', authenticateApiKey, async (req, res) => {  // Mengub
     }
 });
 
+// Route untuk mengakses halaman admin (tanpa login)
+app.get('/admin', (req, res) => {
+  if (!req.session.isAdmin) {
+    // Redirect ke halaman login jika belum login
+    return res.redirect('/login.html');
+  }
+  res.sendFile(path.join(__dirname, 'admin.html'));
+});
+
+
 
 // Menangani request untuk file HTML
 app.get('/', (req, res) => {
@@ -371,13 +371,6 @@ app.get('/signin.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'signin.html'));
 });
 
-app.get('/admin.html', (req, res) => {
-  if (req.session && req.session.isAdmin) {
-    res.sendFile(path.join(__dirname, 'admin.html'));
-  } else {
-    res.redirect('/admin.html'); // Redirect to login if not admin
-  }
-});
 
 app.listen(port, () => {
     console.log(`Server berjalan di http://localhost:${port}`);
