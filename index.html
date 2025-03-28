@@ -29,6 +29,7 @@
             width: 80%;
             max-width: 800px;
             margin-top: 20px;
+            position: relative; /* Untuk penempatan tombol di sudut */
         }
 
         .header {
@@ -44,6 +45,13 @@
             font-style: italic;
         }
 
+        /* Tombol di Pojok Kanan Atas */
+        .top-right-buttons {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+
         .api-key-button {
             background-color: #007bff;
             color: #fff;
@@ -53,7 +61,7 @@
             cursor: pointer;
             border-radius: 8px;
             transition: background-color 0.2s ease-in-out;
-            margin: 5px;
+            margin: 5px; /* Jarak antar tombol */
         }
 
         .api-key-button:hover {
@@ -199,6 +207,21 @@
             overflow-x: auto;
         }
 
+        /* Style untuk tampilan setelah login */
+        .after-login-section {
+            margin-top: 20px;
+            text-align: left; /* Align text to the left */
+        }
+        .api-key-display {
+          margin-top: 20px;
+          padding: 15px;
+          border: 1px solid #ccc;
+          border-radius: 6px;
+          background-color: #f9f9f9;
+          font-family: monospace;
+          word-break: break-all; /* Untuk mencegah API key keluar dari kontainer */
+        }
+
     </style>
 </head>
 <body>
@@ -206,9 +229,14 @@
         <h1 class="header"><i class="fas fa-code"></i> Wanzofc API</h1>
         <div id="runningText" class="running-text"></div>
 
+        <!-- Tombol di Pojok Kanan Atas -->
+        <div class="top-right-buttons">
+            <a href="signin.html" class="api-key-button"><i class="fas fa-user-plus"></i> Daftar</a>
+        </div>
+
         <button id="getApiKeyBtn" class="api-key-button"><i class="fas fa-key"></i> Dapatkan API Key</button>
         <button id="redeemCodeBtn" class="api-key-button"><i class="fas fa-gift"></i> Kode Redeem</button>
-        <a href="signin.html" class="api-key-button"><i class="fas fa-user-plus"></i> Daftar</a>
+
 
 
         <div id="apiKeyModal" class="modal">
@@ -232,8 +260,14 @@
             </div>
         </div>
 
-        <div id="endpointsContainer">
+        <div id="afterLoginSection" class="after-login-section" style="display: none;">
+            <h2><i class="fas fa-user"></i> Selamat Datang!</h2>
+            <div class="api-key-display" id="apiKeyDisplay"></div>
+            <h3><i class="fas fa-list"></i> Daftar Endpoint:</h3>
+            <div id="endpointsContainer"></div>
         </div>
+
+        <!--  Removed the endpointsContainer here, as it will now be in the afterLoginSection -->
     </div>
 
     <script>
@@ -252,6 +286,8 @@
         const redeemMessageContainer = document.getElementById('redeemMessageContainer');
         const endpointsContainer = document.getElementById('endpointsContainer');
         const runningTextElement = document.getElementById('runningText');
+        const afterLoginSection = document.getElementById('afterLoginSection');
+        const apiKeyDisplay = document.getElementById('apiKeyDisplay');
 
         // Fungsi untuk menampilkan pesan
         function showMessage(message, type) {
@@ -344,8 +380,7 @@
 
                 if (data.success) {
                     const apiKey = data.apiKey;
-                    const apiKeyHtml = `API Key Anda: ${apiKey} <button class="copy-button" onclick="copyToClipboard('${apiKey}')"><i class="far fa-copy"></i> Salin</button>`;
-                    showMessage(apiKeyHtml, 'success');
+                    //showMessage(apiKeyHtml, 'success');
                     localStorage.setItem('apiKey', apiKey); // Simpan API Key di Local Storage
                     // Tampilkan SweetAlert setelah login berhasil
                     Swal.fire({
@@ -354,7 +389,9 @@
                         icon: 'success',
                         confirmButtonText: 'OK'
                     });
-                    displayEndpoints(); // Tampilkan endpoint setelah login
+                    // Menampilkan informasi setelah login
+                    displayAfterLogin(apiKey);
+                    //displayEndpoints(); // Tampilkan endpoint setelah login
                 } else {
                     showMessage(`Error: ${data.message}`, 'error');
                 }
@@ -388,7 +425,8 @@
                     const apiKeyHtml = `Kode redeem berhasil digunakan.  API Key Anda: ${apiKey} <button class="copy-button" onclick="copyToClipboard('${apiKey}')"><i class="far fa-copy"></i> Salin</button>`;
                     showRedeemMessage(apiKeyHtml, 'success');
                     localStorage.setItem('apiKey', apiKey); // Simpan API Key di Local Storage
-                    displayEndpoints(); // Tampilkan endpoint setelah redeem
+                    displayAfterLogin(apiKey);
+                    //displayEndpoints(); // Tampilkan endpoint setelah redeem
                 } else {
                     showRedeemMessage(`Error: ${data.message}`, 'error');
                 }
@@ -410,7 +448,9 @@
                 }
             ];
 
-            endpointsContainer.innerHTML = ''; // Clear previous content
+            // Clear previous content
+            const endpointsContainer = document.getElementById('endpointsContainer');
+            endpointsContainer.innerHTML = '';
 
             endpoints.forEach(endpoint => {
                 const endpointItem = document.createElement('div');
@@ -516,19 +556,34 @@
             }
         }
 
+        // Fungsi untuk menampilkan bagian setelah login
+        function displayAfterLogin(apiKey) {
+            // Sembunyikan tombol "Dapatkan API Key" dan "Kode Redeem"
+            getApiKeyBtn.style.display = 'none';
+            redeemCodeBtn.style.display = 'none';
+            // Tampilkan bagian setelah login
+            afterLoginSection.style.display = 'block';
+            // Tampilkan API Key
+            apiKeyDisplay.innerHTML = `API Key Anda: ${apiKey} <button class="copy-button" onclick="copyToClipboard('${apiKey}')"><i class="far fa-copy"></i> Salin</button>`;
+             displayEndpoints();
+        }
+
+
 
         // Saat halaman dimuat
         document.addEventListener('DOMContentLoaded', async () => {
             await getRunningText();
-             // Cek jika sudah ada API Key di local storage, jika iya, tampilkan endpoint
-            if (localStorage.getItem('apiKey')) {
+            // Cek jika sudah ada API Key di local storage, jika iya, tampilkan endpoint
+            const storedApiKey = localStorage.getItem('apiKey');
+            if (storedApiKey) {
+                // Menampilkan SweetAlert
                 Swal.fire({
                     title: 'Selamat Datang!',
                     text: 'Anda berhasil login.',
                     icon: 'success',
                     confirmButtonText: 'OK'
                 });
-                displayEndpoints();
+                displayAfterLogin(storedApiKey);
             }
         });
 
