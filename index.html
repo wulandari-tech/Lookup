@@ -7,7 +7,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
-        /* CSS Internal */
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
@@ -29,7 +28,7 @@
             width: 80%;
             max-width: 800px;
             margin-top: 20px;
-            position: relative; /* Untuk penempatan tombol di sudut */
+            position: relative;
         }
 
         .header {
@@ -45,11 +44,16 @@
             font-style: italic;
         }
 
-        /* Tombol di Pojok Kanan Atas */
         .top-right-buttons {
             position: absolute;
             top: 10px;
             right: 10px;
+        }
+
+        .top-left-buttons {
+            position: absolute;
+            top: 10px;
+            left: 10px;
         }
 
         .api-key-button {
@@ -61,7 +65,7 @@
             cursor: pointer;
             border-radius: 8px;
             transition: background-color 0.2s ease-in-out;
-            margin: 5px; /* Jarak antar tombol */
+            margin: 5px;
         }
 
         .api-key-button:hover {
@@ -206,22 +210,6 @@
             font-family: monospace;
             overflow-x: auto;
         }
-
-        /* Style untuk tampilan setelah login */
-        .after-login-section {
-            margin-top: 20px;
-            text-align: left; /* Align text to the left */
-        }
-        .api-key-display {
-          margin-top: 20px;
-          padding: 15px;
-          border: 1px solid #ccc;
-          border-radius: 6px;
-          background-color: #f9f9f9;
-          font-family: monospace;
-          word-break: break-all; /* Untuk mencegah API key keluar dari kontainer */
-        }
-
     </style>
 </head>
 <body>
@@ -229,18 +217,16 @@
         <h1 class="header"><i class="fas fa-code"></i> Wanzofc API</h1>
         <div id="runningText" class="running-text"></div>
 
-        <!-- Tombol di Pojok Kanan Atas -->
-        <div class="top-right-buttons">
-            <a href="signin.html" class="api-key-button"><i class="fas fa-user-plus"></i> Daftar</a>
+        <div class="top-left-buttons">
+            <button id="logoutButton" class="api-key-button"><i class="fas fa-sign-out-alt"></i> Logout</button>
         </div>
 
         <button id="getApiKeyBtn" class="api-key-button"><i class="fas fa-key"></i> Dapatkan API Key</button>
         <button id="redeemCodeBtn" class="api-key-button"><i class="fas fa-gift"></i> Kode Redeem</button>
 
-
         <div id="apiKeyModal" class="modal">
             <div class="modal-content">
-                <span class="close">&times;</span>
+                <span class="close">×</span>
                 <h2><i class="fas fa-sign-in-alt"></i> Masukkan Username dan Password</h2>
                 <input type="text" id="username" placeholder="Username" required>
                 <input type="password" id="password" placeholder="Password" required>
@@ -251,7 +237,7 @@
 
         <div id="redeemCodeModal" class="modal">
             <div class="modal-content">
-                <span class="close">&times;</span>
+                <span class="close">×</span>
                 <h2><i class="fas fa-gift"></i> Masukkan Kode Redeem</h2>
                 <input type="text" id="redeemCode" placeholder="Kode Redeem" required>
                 <button id="submitRedeemCode"><i class="fas fa-check"></i> Gunakan Kode</button>
@@ -265,17 +251,14 @@
             <h3><i class="fas fa-list"></i> Daftar Endpoint:</h3>
             <div id="endpointsContainer"></div>
         </div>
-
-        <!--  Removed the endpointsContainer here, as it will now be in the afterLoginSection -->
     </div>
 
     <script>
-        // JavaScript Internal
         const getApiKeyBtn = document.getElementById('getApiKeyBtn');
         const redeemCodeBtn = document.getElementById('redeemCodeBtn');
         const apiKeyModal = document.getElementById('apiKeyModal');
         const redeemCodeModal = document.getElementById('redeemCodeModal');
-        const closeBtns = document.getElementsByClassName('close'); // Gunakan ini untuk semua tombol close
+        const closeBtns = document.getElementsByClassName('close');
         const submitApiKeyBtn = document.getElementById('submitApiKey');
         const usernameInput = document.getElementById('username');
         const passwordInput = document.getElementById('password');
@@ -287,26 +270,24 @@
         const runningTextElement = document.getElementById('runningText');
         const afterLoginSection = document.getElementById('afterLoginSection');
         const apiKeyDisplay = document.getElementById('apiKeyDisplay');
+        const logoutButton = document.getElementById('logoutButton');
 
-        // Fungsi untuk menampilkan pesan
         function showMessage(message, type) {
             const messageElement = document.createElement('div');
             messageElement.className = `message ${type}-message`;
-            messageElement.innerHTML = message;
-            messageContainer.innerHTML = ''; // Bersihkan pesan sebelumnya
+            messageElement.textContent = message;
+            messageContainer.innerHTML = '';
             messageContainer.appendChild(messageElement);
         }
 
-        // Fungsi untuk menampilkan pesan redeem code
         function showRedeemMessage(message, type) {
             const messageElement = document.createElement('div');
             messageElement.className = `message ${type}-message`;
             messageElement.textContent = message;
-            redeemMessageContainer.innerHTML = ''; // Bersihkan pesan sebelumnya
+            redeemMessageContainer.innerHTML = '';
             redeemMessageContainer.appendChild(messageElement);
         }
 
-        // Fungsi untuk menyalin teks
         function copyToClipboard(text) {
             navigator.clipboard.writeText(text)
                 .then(() => {
@@ -318,7 +299,6 @@
                 });
         }
 
-        // Fungsi untuk mendapatkan Running Text
         async function getRunningText() {
             try {
                 const response = await fetch('/api/runningtext');
@@ -330,7 +310,6 @@
             }
         }
 
-
         getApiKeyBtn.addEventListener('click', () => {
             apiKeyModal.style.display = 'block';
         });
@@ -339,15 +318,13 @@
             redeemCodeModal.style.display = 'block';
         });
 
-         // Tambahkan event listener untuk semua tombol close
-        for (let i = 0; i < closeBtns.length; i++) {
+         for (let i = 0; i < closeBtns.length; i++) {
             closeBtns[i].addEventListener('click', () => {
                 apiKeyModal.style.display = 'none';
                 redeemCodeModal.style.display = 'none';
             });
         }
 
-        // Close modals when clicking outside
         window.addEventListener('click', (event) => {
             if (event.target == apiKeyModal) {
                 apiKeyModal.style.display = 'none';
@@ -367,7 +344,7 @@
             }
 
             try {
-                const response = await fetch('/api/getkey', {
+                const response = await fetch('/login', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -379,18 +356,15 @@
 
                 if (data.success) {
                     const apiKey = data.apiKey;
-                    //showMessage(apiKeyHtml, 'success');
-                    localStorage.setItem('apiKey', apiKey); // Simpan API Key di Local Storage
-                    // Tampilkan SweetAlert setelah login berhasil
+                    showMessage(`API Key Anda: ${apiKey}`, 'success');
+                    // localStorage.setItem('apiKey', apiKey);
                     Swal.fire({
                         title: 'Selamat Datang!',
                         text: 'Anda berhasil login.',
                         icon: 'success',
                         confirmButtonText: 'OK'
                     });
-                    // Menampilkan informasi setelah login
-                    displayAfterLogin(apiKey);
-                    //displayEndpoints(); // Tampilkan endpoint setelah login
+                    displayAfterLogin(apiKey, username);
                 } else {
                     showMessage(`Error: ${data.message}`, 'error');
                 }
@@ -423,9 +397,10 @@
                     const apiKey = data.apiKey;
                     const apiKeyHtml = `Kode redeem berhasil digunakan.  API Key Anda: ${apiKey} <button class="copy-button" onclick="copyToClipboard('${apiKey}')"><i class="far fa-copy"></i> Salin</button>`;
                     showRedeemMessage(apiKeyHtml, 'success');
-                    localStorage.setItem('apiKey', apiKey); // Simpan API Key di Local Storage
-                    displayAfterLogin(apiKey);
-                    //displayEndpoints(); // Tampilkan endpoint setelah redeem
+                    //localStorage.setItem('apiKey', apiKey);
+                     //const username =  req.session.username;
+                    //displayAfterLogin(apiKey,username);
+                    window.location.reload();
                 } else {
                     showRedeemMessage(`Error: ${data.message}`, 'error');
                 }
@@ -435,19 +410,17 @@
             }
         });
 
-        // Fungsi untuk menampilkan endpoint
         async function displayEndpoints() {
             const endpoints = [
                 {
                     name: 'Check Gopay',
                     description: 'Memeriksa informasi Gopay.',
-                    method: 'POST', // Gunakan POST karena kita mengirim data
-                    url: '/api/checkgopay', // Gunakan route di backend
+                    method: 'POST',
+                    url: '/api/checkgopay',
                     params: [{ name: 'account_number', description: 'Nomor akun Gopay' }]
                 }
             ];
 
-            // Clear previous content
             const endpointsContainer = document.getElementById('endpointsContainer');
             endpointsContainer.innerHTML = '';
 
@@ -466,14 +439,12 @@
                 `;
                 endpointsContainer.appendChild(endpointItem);
 
-                // Tambahkan event listener ke tombol "Try"
                 const tryButton = endpointItem.querySelector('.try-button');
                 tryButton.addEventListener('click', async () => {
                     const url = tryButton.dataset.url;
                     const method = tryButton.dataset.method;
-                    const params = JSON.parse(tryButton.dataset.params);  // Ambil parameter
+                    const params = JSON.parse(tryButton.dataset.params);
 
-                    // Buat modal untuk input parameter jika ada
                     if (params && params.length > 0) {
                         Swal.fire({
                             title: 'Masukkan Parameter',
@@ -511,19 +482,13 @@
             });
         }
 
-        // Fungsi untuk memanggil endpoint dan menampilkan response
         async function callEndpoint(endpointName, method, url, params = {}) {
             const responseAreaId = `response-${endpointName.replace(/\s+/g, '-').toLowerCase()}`;
             const responseArea = document.getElementById(responseAreaId);
-            responseArea.innerHTML = '<p>Loading...</p>'; // Menampilkan loading saat menunggu response
+            responseArea.innerHTML = '<p>Loading...</p>';
 
             try {
-                const apiKey = localStorage.getItem('apiKey'); // Ambil API Key dari local storage
-                if (!apiKey) {
-                    responseArea.innerHTML = '<p class="error-message">API Key tidak ditemukan.  Dapatkan API Key terlebih dahulu.</p>';
-                    return;
-                }
-
+                const apiKey = '';
                 const headers = {
                     'x-api-key': apiKey,
                     'Content-Type': 'application/json'
@@ -531,7 +496,6 @@
 
                 let response;
                 if (method.toUpperCase() === 'GET') {
-                    // Jika metode GET, tambahkan parameter ke URL
                     const queryParams = new URLSearchParams(params).toString();
                     const finalUrl = queryParams ? `${url}?${queryParams}` : url;
                     response = await fetch(finalUrl, {
@@ -539,14 +503,12 @@
                         headers: headers
                     });
                 } else if (method.toUpperCase() === 'POST') {
-                    // Jika metode POST, kirimkan data dalam body
                     response = await fetch(url, {
                         method: method,
                         headers: headers,
-                        body: JSON.stringify(params) // Kirim parameter sebagai JSON
+                        body: JSON.stringify(params)
                     });
                 }else {
-                   // Tambahkan penanganan metode lain (POST, PUT, DELETE, dll.) jika diperlukan
                    responseArea.innerHTML = '<p class="error-message">Metode HTTP tidak didukung.</p>';
                    return;
                 }
@@ -554,7 +516,7 @@
                 const data = await response.json();
 
                 if (response.ok) {
-                    responseArea.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`; // Menampilkan JSON dengan format yang baik
+                    responseArea.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
                 } else {
                     responseArea.innerHTML = `<p class="error-message">Error: ${data.error || 'Terjadi kesalahan.'}</p>`;
                 }
@@ -565,37 +527,46 @@
             }
         }
 
-        // Fungsi untuk menampilkan bagian setelah login
-        function displayAfterLogin(apiKey) {
-            // Sembunyikan tombol "Dapatkan API Key" dan "Kode Redeem"
+        function displayAfterLogin(apiKey, username) {
             getApiKeyBtn.style.display = 'none';
             redeemCodeBtn.style.display = 'none';
-            // Tampilkan bagian setelah login
             afterLoginSection.style.display = 'block';
-            // Tampilkan API Key
             apiKeyDisplay.innerHTML = `API Key Anda: ${apiKey} <button class="copy-button" onclick="copyToClipboard('${apiKey}')"><i class="far fa-copy"></i> Salin</button>`;
              displayEndpoints();
+             //fetchRunningText();
         }
 
+        logoutButton.addEventListener('click', async () => {
+            try {
+                const response = await fetch('/logout');
+                const data = await response.json();
 
-
-        // Saat halaman dimuat
-        document.addEventListener('DOMContentLoaded', async () => {
-            await getRunningText();
-            // Cek jika sudah ada API Key di local storage, jika iya, tampilkan endpoint
-            const storedApiKey = localStorage.getItem('apiKey');
-            if (storedApiKey) {
-                // Menampilkan SweetAlert
-                Swal.fire({
-                    title: 'Selamat Datang!',
-                    text: 'Anda berhasil login.',
-                    icon: 'success',
-                    confirmButtonText: 'OK'
-                });
-                displayAfterLogin(storedApiKey);
+                if (data.success) {
+                    window.location.reload();
+                } else {
+                    showMessage('Gagal logout.', 'error');
+                }
+            } catch (error) {
+                showMessage('Terjadi kesalahan saat logout.', 'error');
+                console.error('Error:', error);
             }
         });
 
+        async function fetchRunningText() {
+            try {
+                const response = await fetch('/api/runningtext');
+                const data = await response.json();
+                runningTextElement.textContent = data.runningText;
+            } catch (error) {
+                console.error('Error fetching running text:', error);
+                runningTextElement.textContent = 'Gagal memuat teks berjalan.';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            await getRunningText();
+            displayEndpoints();
+        });
     </script>
 </body>
 </html>
