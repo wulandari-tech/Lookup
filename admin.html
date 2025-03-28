@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin - Wanzofc Rest API</title>
+    <title>Admin - Wanzofc Rest API (Tanpa Login - TIDAK AMAN)</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
@@ -139,7 +139,7 @@
 </head>
 <body>
     <header class="header">
-        <h1><i class="fas fa-tools"></i> Admin - Wanzofc Rest API</h1>
+        <h1><i class="fas fa-tools"></i> Admin - Wanzofc Rest API (Tanpa Login - TIDAK AMAN)</h1>
     </header>
 
     <div class="container">
@@ -206,7 +206,6 @@
            <!-- Daftar API Key Kustom -->
         </ul>
 
-        <button id="logoutButton" class="logout-button"><i class="fas fa-sign-out-alt"></i> Logout</button>
     </div>
 
     <script>
@@ -216,7 +215,6 @@
         const createApiKeyBtn = document.getElementById('createApiKeyBtn');
         const createApiKeyResult = document.getElementById('createApiKeyResult');
         const apiKeyList = document.getElementById('apiKeyList');
-        const logoutButton = document.getElementById('logoutButton');
         const runningTextInput = document.getElementById('runningText');
         const updateRunningTextBtn = document.getElementById('updateRunningTextBtn');
         const runningTextResult = document.getElementById('runningTextResult');
@@ -231,7 +229,6 @@
         const createCustomApiKeyBtn = document.getElementById('createCustomApiKeyBtn');
         const createCustomApiKeyResult = document.getElementById('createCustomApiKeyResult');
         const customApiKeyList = document.getElementById('customApiKeyList');
-
 
         // Fungsi untuk menampilkan pesan
         function showMessage(message, type) {
@@ -268,11 +265,9 @@
                     listItem.classList.add('api-key-item');
                     listItem.innerHTML = `
                         <span><i class="fas fa-user"></i> ${apiKey.username}: ${apiKey.key}</span>
-                        <button class="delete-button" data-username="${apiKey.username}"><i class="fas fa-trash-alt"></i> Hapus</button>
                     `;
                     apiKeyList.appendChild(listItem);
                 });
-                attachDeleteListeners(); // Attach event listeners after rendering
             } catch (error) {
                 console.error('Error fetching API keys:', error);
             }
@@ -450,41 +445,6 @@
         });
 
 
-        // Fungsi untuk menghapus API Key
-        async function deleteApiKey(username) {
-            try {
-                const response = await fetch('/ADM/deletekey', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ username })
-                });
-
-                const data = await response.json();
-
-                if (data.success) {
-                    showMessage(`API Key untuk ${username} berhasil dihapus.`, 'success');
-                    fetchApiKeys(); // Refresh daftar API keys
-                } else {
-                    showMessage(`Error: ${data.message}`, 'error');
-                }
-            } catch (error) {
-                showMessage('Terjadi kesalahan saat menghapus API Key.', 'error');
-                console.error('Error:', error);
-            }
-        }
-
-        // Fungsi untuk memasang event listener pada tombol hapus
-        function attachDeleteListeners() {
-            document.querySelectorAll('.delete-button').forEach(button => {
-                button.addEventListener('click', () => {
-                    const username = button.dataset.username;
-                    deleteApiKey(username);
-                });
-            });
-        }
-
         // Load API keys saat halaman dimuat
         document.addEventListener('DOMContentLoaded', async () => {
             await fetchApiKeys();
@@ -492,9 +452,6 @@
             await fetchCustomApiKeys();
         });
 
-        logoutButton.addEventListener('click', () => {
-            window.location.href = '/logout'; // Redirect ke /logout
-        });
 
     </script>
 </body>
