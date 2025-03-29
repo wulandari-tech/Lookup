@@ -7,7 +7,12 @@ const port = 3000;
 
 app.use(bodyParser.json());
 app.use(express.static(__dirname));
-
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html')); // Kirim file index.html
+});
+app.get('/wanzbrayy', (req, res) => {
+    res.sendFile(path.join(__dirname, 'admin.html')); // Kirim file index.html
+});
 app.post('/process', (req, res) => {
     const { code, mode, formattingOptions } = req.body;
     let cleanedCode = "";
