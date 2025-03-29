@@ -74,6 +74,7 @@
         #outputContainer {
             width: 100%;
             box-sizing: border-box;
+            position: relative; /* For absolute positioning of copy button */
         }
 
         #errorMessage {
@@ -148,16 +149,34 @@
           height: 250px;
           font-size: 2em;
         }
+        /* Copy Button Style */
+        .copy-button {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: #555;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: background-color 0.3s ease;
+        }
+
+        .copy-button:hover {
+            background-color: #777;
+        }
     </style>
 </head>
 <body>
-    <h1><i class="fas fa-code"></i> WANZOFC CLEAR</h1>
+    <h1><i class="fas fa-code"></i> wanzofc clear</h1>
 
     <div class="container">
         <div class="options">
             <label for="mode"><i class="fas fa-wrench"></i> Mode:</label>
             <select id="mode">
-                <option value="clean"><i class="fas fa-broom"></i> Bersihkan Code</option>
+                <option value="clean"><i class="fas fa-broom"></i> Bersihkan</option>
                 <option value="minify"><i class="fas fa-compress-alt"></i> Minify</option>
                 <option value="format"><i class="fas fa-paint-brush"></i> Format</option>
                 <option value="beautify-html"><i class="fab fa-html5"></i> Beautify HTML</option>
@@ -184,6 +203,7 @@
 
         <div id="outputContainer">
             <textarea id="codeOutput" readonly placeholder="Hasil"></textarea>
+            <button class="copy-button" id="copyButton"><i class="fas fa-copy"></i> Salin</button>  <!-- Copy button -->
             <div id="errorMessage"></div>
         </div>
     </div>
@@ -199,6 +219,7 @@
         const settingsContainer = document.getElementById('settingsContainer');
         const indentSizeInput = document.getElementById('indentSize');
         const useTabsInput = document.getElementById('useTabs');
+        const copyButton = document.getElementById('copyButton'); // Get the copy button
 
         modeSelect.addEventListener('change', () => {
             const selectedMode = modeSelect.value;
@@ -214,7 +235,15 @@
             const mode = modeSelect.value;
             errorMessage.style.display = "none";
             codeOutput.value = "";
-            outputContainer.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i></div>';
+            outputContainer.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i></div>' +
+                                        '<textarea id="codeOutput" readonly placeholder="Hasil"></textarea>' +
+                                        '<button class="copy-button" id="copyButton"><i class="fas fa-copy"></i> Salin</button>' +
+                                        '<div id="errorMessage"></div>';
+
+            const newCodeOutput = document.getElementById('codeOutput');
+            const newCopyButton = document.getElementById('copyButton');
+            const newErrorMessage = document.getElementById('errorMessage');
+
 
             let formattingOptions = {};
             if (["format", "beautify-html", "beautify-css", "beautify-js"].includes(mode)) {
@@ -231,21 +260,46 @@
                 },
                 body: JSON.stringify({ code, mode, formattingOptions })
             })
-            .then(response => response.json())
+            .then(response => {
+               if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                return response.json()
+            })
             .then(data => {
-                codeOutput.value = data.cleanedCode;
-                outputContainer.innerHTML = '<textarea id="codeOutput" readonly placeholder="Hasil"></textarea><div id="errorMessage"></div>';
-                codeOutput = document.getElementById('codeOutput');
-                document.getElementById('errorMessage').textContent = "";
-                document.getElementById('errorMessage').style.display = "none";
+                newCodeOutput.value = data.cleanedCode;
+                newErrorMessage.textContent = "";
+                newErrorMessage.style.display = "none";
+                // Set up the copy button again after the result arrives
+                newCopyButton.addEventListener('click', () => {
+                    copyToClipboard(newCodeOutput.value);
+                });
             })
             .catch(error => {
                 console.error("Error:", error);
-                outputContainer.innerHTML = '<textarea id="codeOutput" readonly placeholder="Hasil"></textarea><div id="errorMessage"></div>';
-                codeOutput = document.getElementById('codeOutput');
-                errorMessage.textContent = "Terjadi kesalahan: " + error.message;
-                errorMessage.style.display = "block";
+                newCodeOutput.value = "";
+                newErrorMessage.textContent = "Terjadi kesalahan: " + error.message;
+                newErrorMessage.style.display = "block";
+
+                //  Re-attach copy button if an error occurs too
+                newCopyButton.addEventListener('click', () => {
+                    copyToClipboard(newCodeOutput.value); // still try to copy even with the error
+                });
+
             });
+
+            function copyToClipboard(text) {
+                navigator.clipboard.writeText(text)
+                    .then(() => {
+                        // Optionally provide feedback to the user, e.g., by changing the button text
+                        console.log('Text copied to clipboard');
+                        // You could also change the button text briefly
+                    })
+                    .catch(err => {
+                        console.error('Could not copy text: ', err);
+                        // Handle the error, e.g., by showing an alert
+                    });
+            }
         });
     </script>
 </body>
