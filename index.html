@@ -1,591 +1,252 @@
 <!DOCTYPE html>
 <html lang="en">
-	<head>
-		<meta charset="UTF-8">
-		<meta name="viewport" content="width=device-width, initial-scale=1.0">
-		<title>Wanzofc Rest API</title>
-		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-		<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-		<style>
-			body {
-				font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-				margin: 0;
-				padding: 0;
-				background-color: #f8f9fa;
-				color: #343a40;
-				display: flex;
-				flex-direction: column;
-				align-items: center;
-				min-height: 100vh;
-			}
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>wanzofc clear</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #1e1e1e;
+            color: #f0f0f0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
 
-			.container {
-				background-color: #fff;
-				border-radius: 10px;
-				box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-				padding: 30px;
-				text-align: center;
-				width: 80%;
-				max-width: 800px;
-				margin-top: 20px;
-				position: relative;
-			}
+        h1 {
+            color: #61dafb;
+            margin-bottom: 20px;
+            font-size: 2.5em;
+        }
 
-			.header {
-				margin-bottom: 20px;
-				color: #007bff;
-			}
+        .container {
+            background-color: #282c34;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+            max-width: 900px;
+            width: 95%;
+            margin: 20px 0;
+        }
 
-			.running-text {
-				background-color: #f0f0f0;
-				padding: 10px;
-				border-radius: 5px;
-				margin-bottom: 20px;
-				font-style: italic;
-			}
+        textarea {
+            width: 100%;
+            height: 250px;
+            margin-bottom: 15px;
+            padding: 15px;
+            border: 1px solid #444;
+            background-color: #282c34;
+            color: #f0f0f0;
+            font-size: 16px;
+            font-family: monospace;
+            resize: vertical;
+            box-sizing: border-box;
+            border-radius: 8px;
+        }
 
-			.top-right-buttons {
-				position: absolute;
-				top: 10px;
-				right: 10px;
-			}
+        button {
+            background-color: #61dafb;
+            color: #282c34;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 18px;
+            transition: background-color 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
 
-			.top-left-buttons {
-				position: absolute;
-				top: 10px;
-				left: 10px;
-			}
+        button:hover {
+            background-color: #5bc1d9;
+        }
 
-			.api-key-button {
-				background-color: #007bff;
-				color: #fff;
-				border: none;
-				padding: 12px 25px;
-				font-size: 18px;
-				cursor: pointer;
-				border-radius: 8px;
-				transition: background-color 0.2s ease-in-out;
-				margin: 5px;
-			}
+        button i {
+            margin-right: 5px;
+        }
 
-			.api-key-button:hover {
-				background-color: #0056b3;
-			}
+        #outputContainer {
+            width: 100%;
+            box-sizing: border-box;
+        }
 
-			.modal {
-				display: none;
-				position: fixed;
-				z-index: 2;
-				left: 0;
-				top: 0;
-				width: 100%;
-				height: 100%;
-				overflow: auto;
-				background-color: rgba(0, 0, 0, 0.5);
-			}
+        #errorMessage {
+            color: #ff5555;
+            margin-top: 15px;
+            display: none;
+        }
 
-			.modal-content {
-				background-color: #fff;
-				margin: 15% auto;
-				padding: 30px;
-				border-radius: 10px;
-				box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-				width: 80%;
-				max-width: 500px;
-				text-align: center;
-			}
+        .options {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            gap: 15px;
+        }
 
-			.close {
-				color: #aaa;
-				float: right;
-				font-size: 28px;
-				font-weight: bold;
-				cursor: pointer;
-			}
+        label {
+            font-size: 1.1em;
+            font-weight: bold;
+        }
 
-			.close:hover,
-			.close:focus {
-				color: black;
-				text-decoration: none;
-			}
+        select {
+            background-color: #282c34;
+            color: #f0f0f0;
+            padding: 10px 15px;
+            border: 1px solid #444;
+            border-radius: 8px;
+            font-size: 16px;
+        }
 
-			input[type="text"],
-			input[type="password"] {
-				width: 100%;
-				padding: 12px;
-				margin-bottom: 20px;
-				border: 1px solid #ced4da;
-				border-radius: 6px;
-				font-size: 16px;
-				box-sizing: border-box;
-			}
+        .settings-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 20px;
+            border: 1px solid #444;
+            padding: 15px;
+            border-radius: 8px;
+        }
 
-			button {
-				background-color: #28a745;
-				color: #fff;
-				padding: 12px 25px;
-				border: none;
-				border-radius: 8px;
-				cursor: pointer;
-				font-size: 18px;
-				transition: background-color 0.2s ease-in-out;
-				margin-right: 10px;
-			}
+        .settings-row {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
 
-			button:hover {
-				background-color: #218838;
-			}
+        .settings-row label {
+            width: 150px;
+            text-align: right;
+        }
 
-			.fas,
-			.far {
-				margin-right: 8px;
-			}
+        .settings-row input[type="number"] {
+            width: 60px;
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid #555;
+            background-color: #282c34;
+            color: #f0f0f0;
+        }
 
-			.success-message,
-			.error-message {
-				padding: 15px;
-				border-radius: 8px;
-				margin-top: 20px;
-				font-size: 16px;
-			}
+         .settings-row select {
+            width: 150px;
+            padding: 10px 15px;
+            border: 1px solid #444;
+            border-radius: 8px;
+            font-size: 16px;
+        }
 
-			.success-message {
-				background-color: #d4edda;
-				color: #155724;
-				border: 1px solid #c3e6cb;
-			}
+        .loading {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          height: 250px;
+          font-size: 2em;
+        }
+    </style>
+</head>
+<body>
+    <h1><i class="fas fa-code"></i> WANZOFC CLEAR</h1>
 
-			.error-message {
-				background-color: #f8d7da;
-				color: #721c24;
-				border: 1px solid #f5c6cb;
-			}
+    <div class="container">
+        <div class="options">
+            <label for="mode"><i class="fas fa-wrench"></i> Mode:</label>
+            <select id="mode">
+                <option value="clean"><i class="fas fa-broom"></i> Bersihkan Code</option>
+                <option value="minify"><i class="fas fa-compress-alt"></i> Minify</option>
+                <option value="format"><i class="fas fa-paint-brush"></i> Format</option>
+                <option value="beautify-html"><i class="fab fa-html5"></i> Beautify HTML</option>
+                <option value="beautify-css"><i class="fab fa-css3-alt"></i> Beautify CSS</option>
+                <option value="beautify-js"><i class="fab fa-js-square"></i> Beautify JavaScript</option>
+                <option value="convert-to-uppercase"><i class="fas fa-font"></i> Uppercase</option>
+                <option value="convert-to-lowercase"><i class="fas fa-font"></i> Lowercase</option>
+            </select>
+        </div>
 
-			.copy-button {
-				background-color: #17a2b8;
-				color: #fff;
-				border: none;
-				padding: 8px 15px;
-				font-size: 14px;
-				cursor: pointer;
-				border-radius: 4px;
-				margin-left: 10px;
-			}
+        <div class="settings-container" id="settingsContainer" style="display: none;">
+           <div class="settings-row">
+                <label for="indentSize">Ukuran Indentasi:</label>
+                <input type="number" id="indentSize" value="2" min="1" max="8">
+            </div>
+            <div class="settings-row">
+                <label for="useTabs">Gunakan Tab:</label>
+                <input type="checkbox" id="useTabs">
+            </div>
+        </div>
 
-			.copy-button:hover {
-				background-color: #138496;
-			}
+        <textarea id="codeInput" placeholder="Masukkan kode Anda di sini"></textarea>
+        <button id="cleanButton"><i class="fas fa-magic"></i> Proses</button>
 
-			.endpoint-item {
-				background-color: #fff;
-				border: 1px solid #dee2e6;
-				border-radius: 8px;
-				padding: 15px;
-				margin-bottom: 15px;
-				box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-			}
+        <div id="outputContainer">
+            <textarea id="codeOutput" readonly placeholder="Hasil"></textarea>
+            <div id="errorMessage"></div>
+        </div>
+    </div>
 
-			.endpoint-item h3 {
-				margin-bottom: 10px;
-				color: #007bff;
-			}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/js-beautify/1.14.0/beautify.js"></script>
+    <script>
+        const codeInput = document.getElementById('codeInput');
+        const codeOutput = document.getElementById('codeOutput');
+        const cleanButton = document.getElementById('cleanButton');
+        const errorMessage = document.getElementById('errorMessage');
+        const modeSelect = document.getElementById('mode');
+        const outputContainer = document.getElementById('outputContainer');
+        const settingsContainer = document.getElementById('settingsContainer');
+        const indentSizeInput = document.getElementById('indentSize');
+        const useTabsInput = document.getElementById('useTabs');
 
-			.endpoint-item p {
-				margin-bottom: 10px;
-			}
+        modeSelect.addEventListener('change', () => {
+            const selectedMode = modeSelect.value;
+            if (["format", "beautify-html", "beautify-css", "beautify-js"].includes(selectedMode)) {
+                settingsContainer.style.display = 'block';
+            } else {
+                settingsContainer.style.display = 'none';
+            }
+        });
 
-			.endpoint-item button {
-				background-color: #007bff;
-				color: #fff;
-				border: none;
-				padding: 10px 15px;
-				cursor: pointer;
-				border-radius: 6px;
-				font-size: 16px;
-			}
+        cleanButton.addEventListener('click', () => {
+            const code = codeInput.value;
+            const mode = modeSelect.value;
+            errorMessage.style.display = "none";
+            codeOutput.value = "";
+            outputContainer.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i></div>';
 
-			.endpoint-item button:hover {
-				background-color: #0056b3;
-			}
+            let formattingOptions = {};
+            if (["format", "beautify-html", "beautify-css", "beautify-js"].includes(mode)) {
+                 formattingOptions = {
+                     indent_size: parseInt(indentSizeInput.value),
+                     indent_char: useTabsInput.checked ? '\t' : ' ',
+                 };
+            }
 
-			.response-area {
-				margin-top: 20px;
-				padding: 15px;
-				border: 1px solid #ccc;
-				border-radius: 6px;
-				background-color: #f9f9f9;
-				font-family: monospace;
-				overflow-x: auto;
-			}
-		</style>
-	</head>
-	<body>
-		<div class="container">
-			<h1 class="header">
-				<i class="fas fa-code"></i> Wanzofc API
-			</h1>
-			<div id="runningText" class="running-text"></div>
-			<div class="top-left-buttons">
-				<button id="logoutButton" class="api-key-button">
-					<i class="fas fa-sign-out-alt"></i> Logout </button>
-			</div>
-			<button id="getApiKeyBtn" class="api-key-button">
-				<i class="fas fa-key"></i> Dapatkan API Key </button>
-			<button id="redeemCodeBtn" class="api-key-button">
-				<i class="fas fa-gift"></i> Kode Redeem </button>
-			<div id="apiKeyModal" class="modal">
-				<div class="modal-content">
-					<span class="close">×</span>
-					<h2>
-						<i class="fas fa-sign-in-alt"></i> Masukkan Username dan Password
-					</h2>
-					<input type="text" id="username" placeholder="Username" required>
-					<input type="password" id="password" placeholder="Password" required>
-					<button id="submitApiKey">
-						<i class="fas fa-check"></i> Dapatkan API Key </button>
-					<div id="messageContainer"></div>
-					<p>Belum punya akun? <a href="signin.html">Buat Akun</a>
-					</p>
-				</div>
-			</div>
-			<div id="redeemCodeModal" class="modal">
-				<div class="modal-content">
-					<span class="close">×</span>
-					<h2>
-						<i class="fas fa-gift"></i> Masukkan Kode Redeem
-					</h2>
-					<input type="text" id="redeemCode" placeholder="Kode Redeem" required>
-					<button id="submitRedeemCode">
-						<i class="fas fa-check"></i> Gunakan Kode </button>
-					<div id="redeemMessageContainer"></div>
-				</div>
-			</div>
-			<div id="afterLoginSection" class="after-login-section" style="display: none;">
-				<h2>
-					<i class="fas fa-user"></i> Selamat Datang!
-				</h2>
-				<div class="api-key-display" id="apiKeyDisplay"></div>
-				<h3>
-					<i class="fas fa-list"></i> Daftar Endpoint:
-				</h3>
-				<div id="endpointsContainer"></div>
-			</div>
-		</div>
-		<script>
-			const getApiKeyBtn = document.getElementById('getApiKeyBtn');
-			const redeemCodeBtn = document.getElementById('redeemCodeBtn');
-			const apiKeyModal = document.getElementById('apiKeyModal');
-			const redeemCodeModal = document.getElementById('redeemCodeModal');
-			const closeBtns = document.getElementsByClassName('close');
-			const submitApiKeyBtn = document.getElementById('submitApiKey');
-			const usernameInput = document.getElementById('username');
-			const passwordInput = document.getElementById('password');
-			const messageContainer = document.getElementById('messageContainer');
-			const redeemCodeInput = document.getElementById('redeemCode');
-			const submitRedeemCodeBtn = document.getElementById('submitRedeemCode');
-			const redeemMessageContainer = document.getElementById('redeemMessageContainer');
-			const endpointsContainer = document.getElementById('endpointsContainer');
-			const runningTextElement = document.getElementById('runningText');
-			const afterLoginSection = document.getElementById('afterLoginSection');
-			const apiKeyDisplay = document.getElementById('apiKeyDisplay');
-			const logoutButton = document.getElementById('logoutButton');
-
-			function showMessage(message, type) {
-				const messageElement = document.createElement('div');
-				messageElement.className = `message ${type}-message`;
-				messageElement.textContent = message;
-				messageContainer.innerHTML = '';
-				messageContainer.appendChild(messageElement);
-			}
-
-			function showRedeemMessage(message, type) {
-				const messageElement = document.createElement('div');
-				messageElement.className = `message ${type}-message`;
-				messageElement.textContent = message;
-				redeemMessageContainer.innerHTML = '';
-				redeemMessageContainer.appendChild(messageElement);
-			}
-
-			function copyToClipboard(text) {
-				navigator.clipboard.writeText(text).then(() => {
-					showMessage('API Key disalin ke clipboard!', 'success');
-				}).catch(err => {
-					showMessage('Gagal menyalin API Key.', 'error');
-					console.error('Gagal menyalin: ', err);
-				});
-			}
-			async function getRunningText() {
-				try {
-					const response = await fetch('/api/runningtext');
-					const data = await response.json();
-					runningTextElement.textContent = data.runningText;
-				} catch (error) {
-					console.error('Error fetching running text:', error);
-					runningTextElement.textContent = 'Gagal memuat teks berjalan.';
-				}
-			}
-			getApiKeyBtn.addEventListener('click', () => {
-				apiKeyModal.style.display = 'block';
-			});
-			redeemCodeBtn.addEventListener('click', () => {
-				redeemCodeModal.style.display = 'block';
-			});
-			for (let i = 0; i < closeBtns.length; i++) {
-				closeBtns[i].addEventListener('click', () => {
-					apiKeyModal.style.display = 'none';
-					redeemCodeModal.style.display = 'none';
-				});
-			}
-			window.addEventListener('click', (event) => {
-				if (event.target == apiKeyModal) {
-					apiKeyModal.style.display = 'none';
-				}
-				if (event.target == redeemCodeModal) {
-					redeemCodeModal.style.display = 'none';
-				}
-			});
-			submitApiKeyBtn.addEventListener('click', async () => {
-				const username = usernameInput.value;
-				const password = passwordInput.value;
-				if (!username || !password) {
-					showMessage('Harap isi username dan password.', 'error');
-					return;
-				}
-				try {
-					const response = await fetch('/login', {
-						method: 'POST',
-						headers: {
-							'Content-Type': 'application/json'
-						},
-						body: JSON.stringify({
-							username,
-							password
-						})
-					});
-					const data = await response.json();
-					if (data.success) {
-						const apiKey = data.apiKey;
-						showMessage(`API Key Anda: ${apiKey}`, 'success');
-						// localStorage.setItem('apiKey', apiKey);
-						Swal.fire({
-							title: 'Selamat Datang!',
-							text: 'Anda berhasil login.',
-							icon: 'success',
-							confirmButtonText: 'OK'
-						});
-						// Menampilkan informasi setelah login
-						//displayAfterLogin(apiKey, username);
-						//displayEndpoints(); // Tampilkan endpoint setelah login
-						window.location.reload();
-					} else {
-						showMessage(`Error: ${data.message}`, 'error');
-					}
-				} catch (error) {
-					showMessage('Terjadi kesalahan saat mendapatkan API Key.', 'error');
-					console.error('Error:', error);
-				}
-			});
-			submitRedeemCodeBtn.addEventListener('click', async () => {
-				const code = redeemCodeInput.value;
-				if (!code) {
-					showRedeemMessage('Harap masukkan kode redeem.', 'error');
-					return;
-				}
-				try {
-					const response = await fetch('/api/redeem', {
-						method: 'POST',
-						headers: {
-							'Content-Type': 'application/json'
-						},
-						body: JSON.stringify({
-							code
-						})
-					});
-					const data = await response.json();
-					if (data.success) {
-						const apiKey = data.apiKey;
-						const apiKeyHtml = `Kode redeem berhasil digunakan.  API Key Anda: ${apiKey} 
-								<button class="copy-button" onclick="copyToClipboard('${apiKey}')">
-									<i class="far fa-copy"></i> Salin
-								</button>`;
-						showRedeemMessage(apiKeyHtml, 'success');
-						//localStorage.setItem('apiKey', apiKey);
-						//const username =  req.session.username;
-						//displayAfterLogin(apiKey,username);
-						//displayEndpoints(); // Tampilkan endpoint setelah redeem
-						window.location.reload();
-					} else {
-						showRedeemMessage(`Error: ${data.message}`, 'error');
-					}
-				} catch (error) {
-					showRedeemMessage('Terjadi kesalahan saat menggunakan kode redeem.', 'error');
-					console.error('Error:', error);
-				}
-			});
-			async function displayEndpoints() {
-				const endpoints = [{
-					name: 'Check Gopay',
-					description: 'Memeriksa informasi Gopay.',
-					method: 'POST',
-					url: '/api/checkgopay',
-					params: [{
-						name: 'account_number',
-						description: 'Nomor akun Gopay'
-					}]
-				}];
-				const endpointsContainer = document.getElementById('endpointsContainer');
-				endpointsContainer.innerHTML = '';
-				endpoints.forEach(endpoint => {
-					const endpointItem = document.createElement('div');
-					endpointItem.classList.add('endpoint-item');
-					endpointItem.innerHTML = `
-                    
-								<h3>
-									<i class="fas fa-network-wired"></i> ${endpoint.name}
-								</h3>
-								<p>
-									<i class="fas fa-info-circle"></i> ${endpoint.description}
-								</p>
-								<p>
-									<b>Metode:</b> ${endpoint.method}
-								</p>
-								<p>
-									<b>URL:</b> ${endpoint.url}
-								</p>
-                    ${endpoint.params ? `
-								<p>
-									<b>Parameter:</b> ${endpoint.params.map(p => `${p.name}: ${p.description}`).join(', ')}
-								</p>` : ''}
-                    
-								<button class="try-button" data-url="${endpoint.url}" data-method="${endpoint.method}" data-params='${JSON.stringify(endpoint.params || [])}'>
-									<i class="fas fa-play"></i> Try
-								</button>
-								<div class="response-area" id="response-${endpoint.name.replace(/\s+/g, '-').toLowerCase()}"></div>
-                `;
-					endpointsContainer.appendChild(endpointItem);
-					const tryButton = endpointItem.querySelector('.try-button');
-					tryButton.addEventListener('click', async () => {
-						const url = tryButton.dataset.url;
-						const method = tryButton.dataset.method;
-						const params = JSON.parse(tryButton.dataset.params);
-						if (params && params.length > 0) {
-							Swal.fire({
-								title: 'Masukkan Parameter',
-								html: params.map(param => `
-                                
-								<div class="swal2-input-container" style="margin-bottom: 10px;">
-									<label for="${param.name}" style="display:block; margin-bottom: 5px;">${param.name}:</label>
-									<input type="text" id="${param.name}" class="swal2-input" placeholder="${param.description}" style="width: 100%;">
-									</div>
-                            `).join(''),
-								focusConfirm: false,
-								preConfirm: () => {
-									const paramValues = {};
-									params.forEach(param => {
-										const element = document.getElementById(param.name);
-										paramValues[param.name] = element ? element.value : '';
-									});
-									return paramValues;
-								}
-							}).then(async (result) => {
-								if (result.isConfirmed) {
-									const paramValues = result.value;
-									// Build URL dengan parameter
-									// let finalUrl = url;
-									// if (method.toUpperCase() === 'GET' && Object.keys(paramValues).length > 0) {
-									//     finalUrl += Object.keys(paramValues).map(key => `${key}=${encodeURIComponent(paramValues[key])}`).join('&');
-									// }
-									await callEndpoint(endpoint.name, method, url, paramValues);
-								}
-							});
-						} else {
-							await callEndpoint(endpoint.name, method, url);
-						}
-					});
-				});
-			}
-			async function callEndpoint(endpointName, method, url, params = {}) {
-				const responseAreaId = `response-${endpointName.replace(/\s+/g, '-').toLowerCase()}`;
-				const responseArea = document.getElementById(responseAreaId);
-				responseArea.innerHTML = ' < p > Loading... < /p>';
-				try {
-					const apiKey = '';
-					const headers = {
-						'x-api-key': apiKey,
-						'Content-Type': 'application/json'
-					};
-					let response;
-					if (method.toUpperCase() === 'GET') {
-						const queryParams = new URLSearchParams(params).toString();
-						const finalUrl = queryParams ? `${url}?${queryParams}` : url;
-						response = await fetch(finalUrl, {
-							method: method,
-							headers: headers
-						});
-					} else if (method.toUpperCase() === 'POST') {
-						response = await fetch(url, {
-							method: method,
-							headers: headers,
-							body: JSON.stringify(params)
-						});
-					} else {
-						responseArea.innerHTML = ' < p class = "error-message" > Metode HTTP tidak didukung. < /p>';
-						return;
-					}
-					const data = await response.json();
-					if (response.ok) {
-						responseArea.innerHTML = `
-									<pre>${JSON.stringify(data, null, 2)}</pre>`;
-					} else {
-						responseArea.innerHTML = `
-									<p class="error-message">Error: ${data.error || 'Terjadi kesalahan.'}</p>`;
-					}
-				} catch (error) {
-					console.error('Error calling endpoint:', error);
-					responseArea.innerHTML = `
-									<p class="error-message">Terjadi kesalahan: ${error.message || 'Unknown error'}</p>`;
-				}
-			}
-
-			function displayAfterLogin(apiKey, username) {
-				getApiKeyBtn.style.display = 'none';
-				redeemCodeBtn.style.display = 'none';
-				afterLoginSection.style.display = 'block';
-				apiKeyDisplay.innerHTML = `API Key Anda: ${apiKey} 
-									<button class="copy-button" onclick="copyToClipboard('${apiKey}')">
-										<i class="far fa-copy"></i> Salin
-									</button>`;
-				//displayEndpoints();
-				//fetchRunningText();
-			}
-			logoutButton.addEventListener('click', async () => {
-				try {
-					const response = await fetch('/logout');
-					const data = await response.json();
-					if (data.success) {
-						window.location.reload();
-					} else {
-						showMessage('Gagal logout.', 'error');
-					}
-				} catch (error) {
-					showMessage('Terjadi kesalahan saat logout.', 'error');
-					console.error('Error:', error);
-				}
-			});
-			async function fetchRunningText() {
-				try {
-					const response = await fetch('/api/runningtext');
-					const data = await response.json();
-					runningTextElement.textContent = data.runningText;
-				} catch (error) {
-					console.error('Error fetching running text:', error);
-					runningTextElement.textContent = 'Gagal memuat teks berjalan.';
-				}
-			}
-			document.addEventListener('DOMContentLoaded', async () => {
-				await getRunningText();
-				displayEndpoints();
-			});
-		</script>
-	</body>
+            fetch('/process', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ code, mode, formattingOptions })
+            })
+            .then(response => response.json())
+            .then(data => {
+                codeOutput.value = data.cleanedCode;
+                outputContainer.innerHTML = '<textarea id="codeOutput" readonly placeholder="Hasil"></textarea><div id="errorMessage"></div>';
+                codeOutput = document.getElementById('codeOutput');
+                document.getElementById('errorMessage').textContent = "";
+                document.getElementById('errorMessage').style.display = "none";
+            })
+            .catch(error => {
+                console.error("Error:", error);
+                outputContainer.innerHTML = '<textarea id="codeOutput" readonly placeholder="Hasil"></textarea><div id="errorMessage"></div>';
+                codeOutput = document.getElementById('codeOutput');
+                errorMessage.textContent = "Terjadi kesalahan: " + error.message;
+                errorMessage.style.display = "block";
+            });
+        });
+    </script>
+</body>
 </html>
