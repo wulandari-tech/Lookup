@@ -1,14 +1,14 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="utf-8">
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>wanzofc clear</title>
-    <link rel="stylesheet" href="https:
-    <script src="https:
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         body {
-            font-family: 'segoe ui', tahoma, geneva, verdana, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: #1e1e1e;
             color: #f0f0f0;
             display: flex;
@@ -72,13 +72,13 @@
             margin-right: 5px;
         }
 
-        #outputcontainer {
+        #outputContainer {
             width: 100%;
             box-sizing: border-box;
             position: relative;
         }
 
-        #errormessage {
+        #errorMessage {
             color: #ff5555;
             margin-top: 15px;
             display: none;
@@ -171,148 +171,148 @@
     </style>
 </head>
 <body>
-    <h1><i class="fas fa-code"></i> WANZOFC CLEAR</h1>
+    <h1><i class="fas fa-code"></i>wanzofc clear</h1>
 
     <div class="container">
         <div class="options">
-            <label for="mode"><i class="fas fa-wrench"></i> mode:</label>
+            <label for="mode"><i class="fas fa-wrench"></i> Mode:</label>
             <select id="mode">
-                <option value="clean"><i class="fas fa-broom"></i> bersihkan</option>
-                <option value="minify"><i class="fas fa-compress-alt"></i> minify</option>
-                <option value="format"><i class="fas fa-paint-brush"></i> format</option>
-                <option value="beautify-html"><i class="fab fa-html5"></i> beautify html</option>
-                <option value="beautify-css"><i class="fab fa-css3-alt"></i> beautify css</option>
-                <option value="beautify-js"><i class="fab fa-js-square"></i> beautify javascript</option>
-                <option value="obfuscate-js"><i class="fas fa-eye-slash"></i> obfuscate javascript</option>
-                <option value="convert-to-uppercase"><i class="fas fa-font"></i> uppercase</option>
-                <option value="convert-to-lowercase"><i class="fas fa-font"></i> lowercase</option>
+                <option value="clean"><i class="fas fa-broom"></i> Bersihkan</option>
+                <option value="minify"><i class="fas fa-compress-alt"></i> Minify</option>
+                <option value="format"><i class="fas fa-paint-brush"></i> Format</option>
+                <option value="beautify-html"><i class="fab fa-html5"></i> Beautify HTML</option>
+                <option value="beautify-css"><i class="fab fa-css3-alt"></i> Beautify CSS</option>
+                <option value="beautify-js"><i class="fab fa-js-square"></i> Beautify JavaScript</option>
+                <option value="obfuscate-js"><i class="fas fa-eye-slash"></i> Obfuscate JavaScript</option>
+                <option value="convert-to-uppercase"><i class="fas fa-font"></i> Uppercase</option>
+                <option value="convert-to-lowercase"><i class="fas fa-font"></i> Lowercase</option>
             </select>
         </div>
 
-        <div class="settings-container" id="settingscontainer" style="display: none;">
+        <div class="settings-container" id="settingsContainer" style="display: none;">
            <div class="settings-row">
-                <label for="indentsize">ukuran indentasi:</label>
-                <input type="number" id="indentsize" value="2" min="1" max="8">
+                <label for="indentSize">Ukuran Indentasi:</label>
+                <input type="number" id="indentSize" value="2" min="1" max="8">
             </div>
             <div class="settings-row">
-                <label for="usetabs">gunakan tab:</label>
-                <input type="checkbox" id="usetabs">
+                <label for="useTabs">Gunakan Tab:</label>
+                <input type="checkbox" id="useTabs">
             </div>
         </div>
 
-        <textarea id="codeinput" placeholder="masukkan kode anda di sini"></textarea>
-        <button id="cleanbutton"><i class="fas fa-magic"></i> proses</button>
+        <textarea id="codeInput" placeholder="Masukkan kode Anda di sini"></textarea>
+        <button id="cleanButton"><i class="fas fa-magic"></i> Proses</button>
 
-        <div id="outputcontainer">
-            <textarea id="codeoutput" readonly placeholder="hasil"></textarea>
-            <button class="copy-button" id="copybutton"><i class="fas fa-copy"></i> salin</button>
-            <div id="errormessage"></div>
+        <div id="outputContainer">
+            <textarea id="codeOutput" readonly placeholder="Hasil"></textarea>
+            <button class="copy-button" id="copyButton"><i class="fas fa-copy"></i> Salin</button>
+            <div id="errorMessage"></div>
         </div>
     </div>
 
-    <script src="https:
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/js-beautify/1.14.0/beautify.js"></script>
     <script>
-        const codeinput = document.getelementbyid('codeinput');
-        const codeoutput = document.getelementbyid('codeoutput');
-        const cleanbutton = document.getelementbyid('cleanbutton');
-        const errormessage = document.getelementbyid('errormessage');
-        const modeselect = document.getelementbyid('mode');
-        const outputcontainer = document.getelementbyid('outputcontainer');
-        const settingscontainer = document.getelementbyid('settingscontainer');
-        const indentsizeinput = document.getelementbyid('indentsize');
-        const usetabsinput = document.getelementbyid('usetabs');
-        const copybutton = document.getelementbyid('copybutton');
+        const codeInput = document.getElementById('codeInput');
+        const codeOutput = document.getElementById('codeOutput');
+        const cleanButton = document.getElementById('cleanButton');
+        const errorMessage = document.getElementById('errorMessage');
+        const modeSelect = document.getElementById('mode');
+        const outputContainer = document.getElementById('outputContainer');
+        const settingsContainer = document.getElementById('settingsContainer');
+        const indentSizeInput = document.getElementById('indentSize');
+        const useTabsInput = document.getElementById('useTabs');
+        const copyButton = document.getElementById('copyButton');
 
-        
-        swal.fire({
-            title: 'selamat datang di wanzofc clear!',
-            text: 'bersihkan kode anda dari tanda "/ kontolmemek".',
+        // SweetAlert
+        Swal.fire({
+            title: 'Selamat datang di Wanzofc Clear!',
+            text: 'wanzofc bersihkan kode anda dari tanda "/".',
             icon: 'success',
-            confirmbuttontext: 'oke'
+            confirmButtonText: 'Oke'
         });
 
-        modeselect.addeventlistener('change', () => {
-            const selectedmode = modeselect.value;
-            if (["format", "beautify-html", "beautify-css", "beautify-js"].includes(selectedmode)) {
-                settingscontainer.style.display = 'block';
+        modeSelect.addEventListener('change', () => {
+            const selectedMode = modeSelect.value;
+            if (["format", "beautify-html", "beautify-css", "beautify-js"].includes(selectedMode)) {
+                settingsContainer.style.display = 'block';
             } else {
-                settingscontainer.style.display = 'none';
+                settingsContainer.style.display = 'none';
             }
         });
 
-        cleanbutton.addeventlistener('click', () => {
-            const code = codeinput.value;
-            const mode = modeselect.value;
-            errormessage.style.display = "none";
-            codeoutput.value = "";
-            outputcontainer.innerhtml = '<div class="loading"><i class="fas fa-spinner fa-spin"></i></div>';
-            let formattingoptions = {};
+        cleanButton.addEventListener('click', () => {
+            const code = codeInput.value;
+            const mode = modeSelect.value;
+            errorMessage.style.display = "none";
+            codeOutput.value = "";
+            outputContainer.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i></div>';
+            let formattingOptions = {};
 
             if (["format", "beautify-html", "beautify-css", "beautify-js"].includes(mode)) {
-                 formattingoptions = {
-                     indent_size: parseint(indentsizeinput.value),
-                     indent_char: usetabsinput.checked ? '\t' : ' ',
+                 formattingOptions = {
+                     indent_size: parseInt(indentSizeInput.value),
+                     indent_char: useTabsInput.checked ? '\t' : ' ',
                  };
             }
 
             fetch('/process', {
-                method: 'post',
+                method: 'POST',
                 headers: {
-                    'content-type': 'application/json'
+                    'Content-Type': 'application/json'
                 },
-                body: json.stringify({ code, mode, formattingoptions })
+                body: JSON.stringify({ code, mode, formattingOptions })
             })
             .then(response => {
                 if (!response.ok) {
-                    return response.text().then(text => { throw new error(`http error! status: ${response.status}.  ${text}`); }); 
+                    return response.text().then(text => { throw new Error(`HTTP error! Status: ${response.status}.  ${text}`); }); // More informative error
                 }
                 return response.json();
             })
             .then(data => {
-                outputcontainer.innerhtml = `
-                    <textarea id="codeoutput" readonly placeholder="hasil">${data.cleanedcode}</textarea>
-                    <button class="copy-button" id="copybutton"><i class="fas fa-copy"></i> salin</button>
-                    <div id="errormessage"></div>
+                outputContainer.innerHTML = `
+                    <textarea id="codeOutput" readonly placeholder="Hasil">${data.cleanedCode}</textarea>
+                    <button class="copy-button" id="copyButton"><i class="fas fa-copy"></i> Salin</button>
+                    <div id="errorMessage"></div>
                 `;
 
-                const newcodeoutput = document.getelementbyid('codeoutput');
-                const newcopybutton = document.getelementbyid('copybutton');
-                const newerrormessage = document.getelementbyid('errormessage');
+                const newCodeOutput = document.getElementById('codeOutput');
+                const newCopyButton = document.getElementById('copyButton');
+                const newErrorMessage = document.getElementById('errorMessage');
 
-                newcopybutton.addeventlistener('click', () => {
-                    copytoclipboard(newcodeoutput.value);
+                newCopyButton.addEventListener('click', () => {
+                    copyToClipboard(newCodeOutput.value);
                 });
-                
-                newerrormessage.textcontent = "";
-                newerrormessage.style.display = "none";
+                // Reattach copy button if an error occurs too
+                newErrorMessage.textContent = "";
+                newErrorMessage.style.display = "none";
 
 
             })
             .catch(error => {
-                console.error("error:", error);
-                outputcontainer.innerhtml = `
-                    <textarea id="codeoutput" readonly placeholder="hasil"></textarea>
-                    <button class="copy-button" id="copybutton"><i class="fas fa-copy"></i> salin</button>
-                    <div id="errormessage">${error.message || 'an error occurred.'}</div>
+                console.error("Error:", error);
+                outputContainer.innerHTML = `
+                    <textarea id="codeOutput" readonly placeholder="Hasil"></textarea>
+                    <button class="copy-button" id="copyButton"><i class="fas fa-copy"></i> Salin</button>
+                    <div id="errorMessage">${error.message || 'An error occurred.'}</div>
                 `;
 
-                const newcodeoutput = document.getelementbyid('codeoutput');
-                const newcopybutton = document.getelementbyid('copybutton');
-                const newerrormessage = document.getelementbyid('errormessage');
+                const newCodeOutput = document.getElementById('codeOutput');
+                const newCopyButton = document.getElementById('copyButton');
+                const newErrorMessage = document.getElementById('errorMessage');
 
 
-                newcopybutton.addeventlistener('click', () => {
-                    copytoclipboard(newcodeoutput.value); 
+                newCopyButton.addEventListener('click', () => {
+                    copyToClipboard(newCodeOutput.value); // still try to copy even with the error
                 });
             });
 
-            function copytoclipboard(text) {
-                navigator.clipboard.writetext(text)
+            function copyToClipboard(text) {
+                navigator.clipboard.writeText(text)
                     .then(() => {
-                        console.log('text copied to clipboard');
+                        console.log('Text copied to clipboard');
                     })
                     .catch(err => {
-                        console.error('could not copy text: ', err);
+                        console.error('Could not copy text: ', err);
                     });
             }
         });
