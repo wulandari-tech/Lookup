@@ -1,3 +1,5 @@
+// Don't delete credit 
+// © WANZOFC
 const express = require('express');
 const bodyParser = require('body-parser');
 const crypto = require('crypto');
@@ -6,28 +8,18 @@ const path = require('path');
 const session = require('express-session');
 const axios = require('axios');
 const cors = require('cors');
-
 const app = express();
 const port = process.env.PORT || 3000;
-
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
-
-// Konfigurasi Session
 app.use(session({
     secret: process.env.SESSION_SECRET || 'wanzofc-secret',
     resave: false,
     saveUninitialized: false,
     cookie: { secure: false }
 }));
-
-// Aktifkan CORS (HANYA UNTUK PENGEMBANGAN.  BATASI DI PRODUKSI!)
 app.use(cors());
-
-// Path untuk menyimpan data
 const dataFilePath = path.join(__dirname, 'data.json');
-
-// Fungsi untuk membaca data dari file JSON
 function readData() {
     try {
         if (!fs.existsSync(dataFilePath)) {
@@ -35,9 +27,9 @@ function readData() {
                 users: [],
                 apiKeys: [],
                 admin: { username: 'awan', password: 'awan1' },
-                runningText: {}, // Teks berjalan per user
-                redemptionCodes: [], // Kode redeem
-                customApiKeys: [] // API Key kustom
+                runningText: {}, 
+                redemptionCodes: [], 
+                customApiKeys: [] 
             });
         }
         const data = fs.readFileSync(dataFilePath, 'utf8');
@@ -45,7 +37,7 @@ function readData() {
             users: [],
             apiKeys: [],
             admin: { username: 'awan', password: 'awan1' },
-            runningText: {}, // Teks berjalan per user
+            runningText: {}, 
             redemptionCodes: [],
             customApiKeys: []
         };
@@ -55,14 +47,12 @@ function readData() {
             users: [],
             apiKeys: [],
             admin: { username: 'awan', password: 'awan1' },
-            runningText: {}, // Teks berjalan per user
+            runningText: {}, 
             redemptionCodes: [],
             customApiKeys: []
         };
     }
 }
-
-// Fungsi untuk menulis data ke file JSON
 function writeData(data) {
     try {
         fs.writeFileSync(dataFilePath, JSON.stringify(data, null, 2), 'utf8');
@@ -70,11 +60,7 @@ function writeData(data) {
         console.error("Error writing data file:", error);
     }
 }
-
-// Inisialisasi Data (jika belum ada)
 let data = readData();
-
-// Fungsi untuk membuat API Key (4 atau 6 digit)
 function generateApiKey(length = 6) {
     const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
     let apiKey = '';
@@ -83,8 +69,6 @@ function generateApiKey(length = 6) {
     }
     return apiKey;
 }
-
-// Middleware Autentikasi API Key
 function authenticateApiKey(req, res, next) {
     const apiKey = req.headers['x-api-key'];
 
@@ -93,11 +77,9 @@ function authenticateApiKey(req, res, next) {
     }
 
     let validApiKey;
-    // Prioritaskan API Key kustom
     validApiKey = data.customApiKeys.find(key => key.key === apiKey);
 
     if (!validApiKey) {
-        // Jika tidak ada API key kustom, cari API key default
         validApiKey = data.apiKeys.find(key => key.key === apiKey);
     }
 
@@ -105,20 +87,13 @@ function authenticateApiKey(req, res, next) {
     if (validApiKey) {
         return next();
     }
-
-    // Jika tidak ditemukan
     return res.status(401).json({ success: false, message: 'API Key tidak valid' });
 }
-
-
-// Route untuk Sign Up
 app.post('/signup', (req, res) => {
   const { username, password } = req.body;
   if (!username || !password) {
     return res.status(400).json({ success: false, message: 'Username dan password harus diisi' });
   }
-
-  // Cek apakah username sudah ada
   if (data.users.some(user => user.username === username)) {
     return res.status(400).json({ success: false, message: 'Username sudah digunakan' });
   }
