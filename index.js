@@ -1,17 +1,13 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const { js_beautify } = require('js-beautify');
+const JavaScriptObfuscator = require('javascript-obfuscator');
 const app = express();
 const port = 3000;
 
 app.use(bodyParser.json());
 app.use(express.static(__dirname));
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'index.html')); // Kirim file index.html
-});
-app.get('/wanzbrayy', (req, res) => {
-    res.sendFile(path.join(__dirname, 'admin.html')); // Kirim file index.html
-});
+
 app.post('/process', (req, res) => {
     const { code, mode, formattingOptions } = req.body;
     let cleanedCode = "";
@@ -35,6 +31,9 @@ app.post('/process', (req, res) => {
                 break;
             case "beautify-js":
                 cleanedCode = js_beautify(code, formattingOptions);
+                break;
+            case "obfuscate-js":
+                cleanedCode = obfuscateJS(code);
                 break;
             case "convert-to-uppercase":
                 cleanedCode = code.toUpperCase();
@@ -68,7 +67,33 @@ function formatCode(code, options = {}) {
         return js_beautify(code, { indent_size: options.indent_size || 2, indent_char: options.indent_char || ' ' });
     } catch (error) {
         console.error("Error formatting code:", error);
-        return code;
+        return code; // Return original code on error
+    }
+}
+
+function obfuscateJS(code) {
+    try {
+        const obfuscationResult = JavaScriptObfuscator.obfuscate(code, {
+           //Konfigurasi Obfuscator (sesuaikan sesuai kebutuhan)
+           compact: true,
+            controlFlowFlattening: true,
+            deadCodeInjection: true,
+            debugProtection: false,
+            debugProtectionInterval: false,
+            disableConsoleOutput: true,
+            identifierNamesGenerator: 'hexadecimal',
+            log: false,
+            renameGlobals: false,
+            rotateUnicodeArray: true,
+            selfDefending: true,
+            stringArray: true,
+            stringArrayEncoding: ['base64'],
+            stringArrayThreshold: 0.75,
+        });
+        return obfuscationResult.getObfuscatedCode();
+    } catch (error) {
+        console.error("Error obfuscating JavaScript:", error);
+        return code; // Return original code if obfuscation fails
     }
 }
 
