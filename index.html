@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -15,9 +15,8 @@
             margin: 0;
             display: flex;
             flex-direction: column;
-            min-height: 100vh;
-            overflow: hidden; /* Prevent vertical scrollbars */
-            overflow-x: hidden; /* Prevent horizontal scrollbars */
+            min-height: 100vh; 
+            overflow-x: hidden; 
         }
 
         .header {
@@ -84,13 +83,19 @@
         .chat-container {
             flex-grow: 1;
             padding: 20px;
-            overflow-y: auto;
+            overflow-y: auto; /* Enable vertical scroll for chat content */
             background-color: rgba(255, 255, 255, 0.05);
             margin: 20px;
             border-radius: 15px;
             box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
             backdrop-filter: blur(8px);
+            scrollbar-width: none; /* Firefox */
         }
+
+        .chat-container::-webkit-scrollbar {
+            display: none; /* Chrome, Safari, Edge */
+        }
+
 
         .message {
             margin-bottom: 12px;
@@ -122,6 +127,7 @@
             margin: 20px;
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
             backdrop-filter: blur(8px);
+            padding-left: 10px; /* Add padding to the left */
         }
 
         #messageInput {
@@ -195,20 +201,6 @@
             width: 100px;
         }
 
-        /* Scrollbar Styling (Webkit - Chrome, Safari) */
-        .chat-container::-webkit-scrollbar {
-            width: 8px;
-        }
-
-        .chat-container::-webkit-scrollbar-thumb {
-            background-color: rgba(150, 150, 150, 0.5);
-            border-radius: 4px;
-        }
-
-        .chat-container::-webkit-scrollbar-track {
-            background-color: rgba(0, 0, 0, 0.2);
-        }
-
         /* Animated Background (Subtle) */
         body::before {
             content: "";
@@ -242,7 +234,7 @@
             </div>
             <div class="profile-username" id="profileUsername"></div>
         </div>
-        <button class="logout-button" onclick="logout()"><i class="fas fa-sign-out-alt"></i></button>
+        <button class="logout-button" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
     </div>
 
     <div class="chat-container" id="chatContainer">
@@ -268,7 +260,6 @@
         const fileInput = document.getElementById('fileInput');
         const filePreview = document.getElementById('filePreview');
         const profileUsername = document.getElementById('profileUsername');
-
 
         // Function to add messages
         function addMessage(message) {
@@ -317,7 +308,12 @@
             messageElement.appendChild(timestampSpan);
 
             chatContainer.appendChild(messageElement);
-            chatContainer.scrollTop = chatContainer.scrollHeight;
+            chatContainer.scrollTop = chatContainer.scrollHeight;  // Auto-scroll to bottom
+
+            // Show Notification
+            if (message.username !== profileUsername.textContent) {
+                showNotification(message.username, message.text);
+            }
         }
 
         // Function to handle file uploads (client-side preview)
@@ -407,6 +403,34 @@
             .catch(error => {
                 console.error('Error fetching profile:', error);
             });
+
+        // Function to show a notification
+        function showNotification(username, messageText) {
+            if (Notification.permission === 'granted') {
+                new Notification(username, {
+                    body: messageText,
+                    icon: 'icon.png', // Ganti dengan ikon aplikasi Anda
+                });
+            } else if (Notification.permission !== 'denied') {
+                Notification.requestPermission().then(permission => {
+                    if (permission === 'granted') {
+                        new Notification(username, {
+                            body: messageText,
+                            icon: 'icon.png', // Ganti dengan ikon aplikasi Anda
+                        });
+                    }
+                });
+            }
+        }
+
+        // Request permission on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!("Notification" in window)) {
+                alert("This browser does not support desktop notifications");
+            } else {
+                Notification.requestPermission();
+            }
+        });
     </script>
 </body>
 
