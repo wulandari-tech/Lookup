@@ -1,10 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>wanzofc chat</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+        integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -14,7 +16,8 @@
             display: flex;
             flex-direction: column;
             min-height: 100vh;
-            overflow: hidden; /* Prevent scrollbars */
+            overflow: hidden; /* Prevent vertical scrollbars */
+            overflow-x: hidden; /* Prevent horizontal scrollbars */
         }
 
         .header {
@@ -31,7 +34,7 @@
         .header-title {
             font-size: 1.5em;
             font-weight: bold;
-            color: #61dafb; /* Neon-ish blue */
+            color: #61dafb;
             text-shadow: 0 0 10px rgba(97, 218, 251, 0.7);
         }
 
@@ -51,6 +54,31 @@
 
         .logout-button:hover {
             background-color: #cc3f3f;
+        }
+
+        /* Profile Section */
+        .profile-container {
+            display: flex;
+            align-items: center;
+        }
+
+        .profile-picture {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #333;
+            margin-right: 10px;
+            overflow: hidden; /* Ensure image fits */
+        }
+
+        .profile-picture img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* Maintain aspect ratio and crop if necessary */
+        }
+
+        .profile-username {
+            font-weight: bold;
         }
 
         .chat-container {
@@ -117,19 +145,54 @@
         #sendButton {
             background-color: #61dafb;
             color: #1e1e2e;
-            padding: 14px 25px;
+            padding: 14px;
             border: none;
             border-radius: 8px;
             cursor: pointer;
             font-size: 1em;
             font-weight: bold;
             transition: background-color 0.3s ease;
-            letter-spacing: 0.05em;
-            text-transform: uppercase;
+            margin-left: -10px; /* Added to move the button to the left */
         }
 
         #sendButton:hover {
             background-color: #41b8e0;
+        }
+
+        #fileInput {
+            display: none; /* Hide the actual file input */
+        }
+
+        .file-upload-button {
+            background-color: #3498db; /* Blue */
+            color: white;
+            border: none;
+            padding: 10px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            margin-right: 10px;
+            transition: background-color 0.3s ease;
+        }
+
+        .file-upload-button:hover {
+            background-color: #2980b9;
+        }
+
+        #filePreview {
+            margin-top: 10px;
+            color: #ccc;
+            font-size: 0.9em;
+        }
+
+        #filePreview img, #filePreview video {
+            max-width: 100px; /* Adjust as needed */
+            max-height: 100px;
+            border-radius: 8px;
+            margin-right: 5px;
+        }
+        #filePreview audio{
+            width: 100px;
         }
 
         /* Scrollbar Styling (Webkit - Chrome, Safari) */
@@ -167,14 +230,19 @@
                 transform: translate(5%, 5%);
             }
         }
-
     </style>
 </head>
 
 <body>
     <div class="header">
-        <div class="header-title">Wanzofc Chat</div>
-        <button class="logout-button" onclick="logout()">Logout</button>
+        <div class="profile-container">
+            <div class="profile-picture">
+                <!-- Add a default profile image or load user's image here -->
+                <img src="default-profile.png" alt="Profile Picture">
+            </div>
+            <div class="profile-username" id="profileUsername"></div>
+        </div>
+        <button class="logout-button" onclick="logout()"><i class="fas fa-sign-out-alt"></i></button>
     </div>
 
     <div class="chat-container" id="chatContainer">
@@ -182,8 +250,12 @@
     </div>
 
     <div class="input-container">
+        <button class="file-upload-button" onclick="document.getElementById('fileInput').click()"><i
+                class="fas fa-paperclip"></i></button>
+        <input type="file" id="fileInput" style="display: none;">
         <input type="text" id="messageInput" placeholder="Ketik pesan..." autocomplete="off">
-        <button id="sendButton">Kirim</button>
+        <button id="sendButton"><i class="fas fa-paper-plane"></i></button>
+        <div id="filePreview"></div> <!-- Area to show file previews -->
     </div>
 
     <script src="/socket.io/socket.io.js"></script>
@@ -193,7 +265,12 @@
         const chatContainer = document.getElementById('chatContainer');
         const messageInput = document.getElementById('messageInput');
         const sendButton = document.getElementById('sendButton');
+        const fileInput = document.getElementById('fileInput');
+        const filePreview = document.getElementById('filePreview');
+        const profileUsername = document.getElementById('profileUsername');
 
+
+        // Function to add messages
         function addMessage(message) {
             const messageElement = document.createElement('div');
             messageElement.classList.add('message');
@@ -207,6 +284,32 @@
             textSpan.textContent = message.text;
             messageElement.appendChild(textSpan);
 
+            //Display image or file previews here.
+            if (message.file) {
+                if (message.file.type.startsWith('image/')) {
+                    const img = document.createElement('img');
+                    img.src = message.file.data;
+                    img.alt = message.file.name;
+                    img.style.maxWidth = '100px'; // Or your desired size
+                    messageElement.appendChild(img);
+                } else if (message.file.type.startsWith('audio/')) {
+                    const audio = document.createElement('audio');
+                    audio.controls = true;
+                    const source = document.createElement('source');
+                    source.src = message.file.data;
+                    source.type = message.file.type;
+                    audio.appendChild(source);
+                    messageElement.appendChild(audio);
+                }
+                else {
+                    const fileLink = document.createElement('a');
+                    fileLink.href = message.file.data;
+                    fileLink.textContent = `[${message.file.name}]`;
+                    fileLink.target = '_blank';
+                    messageElement.appendChild(fileLink);
+                }
+            }
+
             const timestampSpan = document.createElement('span');
             timestampSpan.classList.add('message-timestamp');
             const date = new Date(message.timestamp);
@@ -216,6 +319,39 @@
             chatContainer.appendChild(messageElement);
             chatContainer.scrollTop = chatContainer.scrollHeight;
         }
+
+        // Function to handle file uploads (client-side preview)
+        fileInput.addEventListener('change', () => {
+            filePreview.innerHTML = ''; // Clear previous previews
+            const file = fileInput.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    if (file.type.startsWith('image/')) {
+                        const img = document.createElement('img');
+                        img.src = e.target.result;
+                        img.style.maxWidth = '100px';
+                        img.style.marginRight = '5px';
+                        filePreview.appendChild(img);
+                    } else if (file.type.startsWith('audio/')) {
+                         const audio = document.createElement('audio');
+                         audio.controls = true;
+                         const source = document.createElement('source');
+                         source.src = e.target.result;
+                         source.type = file.type;
+                         audio.appendChild(source);
+                         filePreview.appendChild(audio);
+                    }
+                    else {
+                        const fileNameSpan = document.createElement('span');
+                        fileNameSpan.textContent = file.name;
+                        filePreview.appendChild(fileNameSpan);
+                    }
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
 
         socket.on('chat history', (history) => {
             history.forEach(addMessage);
@@ -227,15 +363,50 @@
 
         sendButton.addEventListener('click', () => {
             const message = messageInput.value;
-            if (message.trim() !== '') {
-                socket.emit('chat message', message);
-                messageInput.value = '';
+            const file = fileInput.files[0];
+            if (message.trim() !== '' || file) {
+                const formData = new FormData();
+                formData.append('message', message);
+                if (file) {
+                    formData.append('file', file);
+                }
+
+                fetch('/chat', { // Assuming you'll handle this route in index.js
+                    method: 'POST',
+                    body: formData,
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                         // Reset input fields and file preview after sending.
+                        messageInput.value = '';
+                        fileInput.value = '';
+                        filePreview.innerHTML = '';
+                    } else {
+                         console.error('Failed to send message:', data.error);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error sending message:', error);
+                });
             }
         });
 
         function logout() {
             window.location.href = '/logout';
         }
+
+        // Fetch username on page load (assuming you have a way to get it from the server)
+        fetch('/profile')
+            .then(response => response.json())
+            .then(data => {
+                if (data.username) {
+                    profileUsername.textContent = data.username;
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching profile:', error);
+            });
     </script>
 </body>
 
