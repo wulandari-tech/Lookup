@@ -1,321 +1,242 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>wanzofc clear</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <title>wanzofc chat</title>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #1e1e1e;
-            color: #f0f0f0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-height: 100vh;
+            background: linear-gradient(135deg, #1e1e2e, #2d2d3d);
+            color: #ffffff;
             margin: 0;
-            padding: 20px;
-        }
-
-        h1 {
-            color: #61dafb;
-            margin-bottom: 20px;
-            font-size: 2.5em;
-        }
-
-        .container {
-            background-color: #282c34;
-            border-radius: 12px;
-            padding: 30px;
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
-            max-width: 900px;
-            width: 95%;
-            margin: 20px 0;
-        }
-
-        textarea {
-            width: 100%;
-            height: 250px;
-            margin-bottom: 15px;
-            padding: 15px;
-            border: 1px solid #444;
-            background-color: #282c34;
-            color: #f0f0f0;
-            font-size: 16px;
-            font-family: monospace;
-            resize: vertical;
-            box-sizing: border-box;
-            border-radius: 8px;
-        }
-
-        button {
-            background-color: #61dafb;
-            color: #282c34;
-            padding: 12px 20px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 18px;
-            transition: background-color 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        button:hover {
-            background-color: #5bc1d9;
-        }
-
-        button i {
-            margin-right: 5px;
-        }
-
-        #outputContainer {
-            width: 100%;
-            box-sizing: border-box;
-            position: relative;
-        }
-
-        #errorMessage {
-            color: #ff5555;
-            margin-top: 15px;
-            display: none;
-        }
-
-        .options {
-            display: flex;
-            align-items: center;
-            margin-bottom: 20px;
-            gap: 15px;
-        }
-
-        label {
-            font-size: 1.1em;
-            font-weight: bold;
-        }
-
-        select {
-            background-color: #282c34;
-            color: #f0f0f0;
-            padding: 10px 15px;
-            border: 1px solid #444;
-            border-radius: 8px;
-            font-size: 16px;
-        }
-
-        .settings-container {
             display: flex;
             flex-direction: column;
-            gap: 10px;
-            margin-top: 20px;
-            border: 1px solid #444;
-            padding: 15px;
-            border-radius: 8px;
+            min-height: 100vh;
+            overflow: hidden; /* Prevent scrollbars */
         }
 
-        .settings-row {
+        .header {
+            background-color: rgba(255, 255, 255, 0.08);
+            padding: 15px 20px;
             display: flex;
+            justify-content: space-between;
             align-items: center;
-            gap: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            border-bottom-left-radius: 15px;
+            border-bottom-right-radius: 15px;
         }
 
-        .settings-row label {
-            width: 150px;
-            text-align: right;
+        .header-title {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #61dafb; /* Neon-ish blue */
+            text-shadow: 0 0 10px rgba(97, 218, 251, 0.7);
         }
 
-        .settings-row input[type="number"] {
-            width: 60px;
-            padding: 8px;
-            border-radius: 4px;
-            border: 1px solid #555;
-            background-color: #282c34;
-            color: #f0f0f0;
-        }
-
-         .settings-row select {
-            width: 150px;
-            padding: 10px 15px;
-            border: 1px solid #444;
-            border-radius: 8px;
-            font-size: 16px;
-        }
-
-        .loading {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          height: 250px;
-          font-size: 2em;
-        }
-
-        .copy-button {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background-color: #555;
+        .logout-button {
+            background-color: #ff4d4d;
             color: white;
             border: none;
-            padding: 5px 10px;
-            border-radius: 4px;
+            padding: 10px 18px;
+            border-radius: 8px;
             cursor: pointer;
-            font-size: 0.9em;
+            font-size: 1em;
+            font-weight: bold;
             transition: background-color 0.3s ease;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
         }
 
-        .copy-button:hover {
-            background-color: #777;
+        .logout-button:hover {
+            background-color: #cc3f3f;
         }
+
+        .chat-container {
+            flex-grow: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background-color: rgba(255, 255, 255, 0.05);
+            margin: 20px;
+            border-radius: 15px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(8px);
+        }
+
+        .message {
+            margin-bottom: 12px;
+            padding: 12px 15px;
+            border-radius: 12px;
+            background-color: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .message-author {
+            font-weight: bold;
+            color: #61dafb;
+            margin-right: 8px;
+            font-size: 0.9em;
+        }
+
+        .message-timestamp {
+            color: #aaa;
+            font-size: 0.8em;
+            margin-left: 12px;
+        }
+
+        .input-container {
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            background-color: rgba(255, 255, 255, 0.08);
+            border-radius: 15px;
+            margin: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(8px);
+        }
+
+        #messageInput {
+            flex-grow: 1;
+            padding: 14px;
+            border: 1px solid #444;
+            border-radius: 8px;
+            background-color: rgba(255, 255, 255, 0.05);
+            color: #ffffff;
+            font-size: 1em;
+            transition: border-color 0.3s ease;
+            margin-right: 15px;
+            box-sizing: border-box; /* Important */
+        }
+
+        #messageInput:focus {
+            border-color: #61dafb;
+            outline: none;
+        }
+
+        #sendButton {
+            background-color: #61dafb;
+            color: #1e1e2e;
+            padding: 14px 25px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+
+        #sendButton:hover {
+            background-color: #41b8e0;
+        }
+
+        /* Scrollbar Styling (Webkit - Chrome, Safari) */
+        .chat-container::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .chat-container::-webkit-scrollbar-thumb {
+            background-color: rgba(150, 150, 150, 0.5);
+            border-radius: 4px;
+        }
+
+        .chat-container::-webkit-scrollbar-track {
+            background-color: rgba(0, 0, 0, 0.2);
+        }
+
+        /* Animated Background (Subtle) */
+        body::before {
+            content: "";
+            position: fixed;
+            top: -10%;
+            left: -10%;
+            width: 120%;
+            height: 120%;
+            background: radial-gradient(circle, rgba(97, 218, 251, 0.1) 0%, rgba(0, 0, 0, 0) 50%);
+            z-index: -1;
+            animation: bgMove 10s linear infinite;
+        }
+
+        @keyframes bgMove {
+            0% {
+                transform: translate(0, 0);
+            }
+            100% {
+                transform: translate(5%, 5%);
+            }
+        }
+
     </style>
 </head>
+
 <body>
-    <h1><i class="fas fa-code"></i>wanzofc clear</h1>
-
-    <div class="container">
-        <div class="options">
-            <label for="mode"><i class="fas fa-wrench"></i> Mode:</label>
-            <select id="mode">
-                <option value="clean"><i class="fas fa-broom"></i> Bersihkan</option>
-                <option value="minify"><i class="fas fa-compress-alt"></i> Minify</option>
-                <option value="format"><i class="fas fa-paint-brush"></i> Format</option>
-                <option value="beautify-html"><i class="fab fa-html5"></i> Beautify HTML</option>
-                <option value="beautify-css"><i class="fab fa-css3-alt"></i> Beautify CSS</option>
-                <option value="beautify-js"><i class="fab fa-js-square"></i> Beautify JavaScript</option>
-                <option value="obfuscate-js"><i class="fas fa-eye-slash"></i> Obfuscate JavaScript</option>
-                <option value="convert-to-uppercase"><i class="fas fa-font"></i> Uppercase</option>
-                <option value="convert-to-lowercase"><i class="fas fa-font"></i> Lowercase</option>
-            </select>
-        </div>
-
-        <div class="settings-container" id="settingsContainer" style="display: none;">
-           <div class="settings-row">
-                <label for="indentSize">Ukuran Indentasi:</label>
-                <input type="number" id="indentSize" value="2" min="1" max="8">
-            </div>
-            <div class="settings-row">
-                <label for="useTabs">Gunakan Tab:</label>
-                <input type="checkbox" id="useTabs">
-            </div>
-        </div>
-
-        <textarea id="codeInput" placeholder="Masukkan kode Anda di sini"></textarea>
-        <button id="cleanButton"><i class="fas fa-magic"></i> Proses</button>
-
-        <div id="outputContainer">
-            <textarea id="codeOutput" readonly placeholder="Hasil"></textarea>
-            <button class="copy-button" id="copyButton"><i class="fas fa-copy"></i> Salin</button>
-            <div id="errorMessage"></div>
-        </div>
+    <div class="header">
+        <div class="header-title">Wanzofc Chat</div>
+        <button class="logout-button" onclick="logout()">Logout</button>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/js-beautify/1.14.0/beautify.js"></script>
+    <div class="chat-container" id="chatContainer">
+        <!-- Pesan chat akan ditampilkan di sini -->
+    </div>
+
+    <div class="input-container">
+        <input type="text" id="messageInput" placeholder="Ketik pesan..." autocomplete="off">
+        <button id="sendButton">Kirim</button>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
     <script>
-        const codeInput = document.getElementById('codeInput');
-        const codeOutput = document.getElementById('codeOutput');
-        const cleanButton = document.getElementById('cleanButton');
-        const errorMessage = document.getElementById('errorMessage');
-        const modeSelect = document.getElementById('mode');
-        const outputContainer = document.getElementById('outputContainer');
-        const settingsContainer = document.getElementById('settingsContainer');
-        const indentSizeInput = document.getElementById('indentSize');
-        const useTabsInput = document.getElementById('useTabs');
-        const copyButton = document.getElementById('copyButton');
+        // JavaScript (Modern & Futuristik)
+        const socket = io();
+        const chatContainer = document.getElementById('chatContainer');
+        const messageInput = document.getElementById('messageInput');
+        const sendButton = document.getElementById('sendButton');
 
-        // SweetAlert
-        Swal.fire({
-            title: 'Selamat datang di Wanzofc Clear!',
-            text: 'wanzofc bersihkan kode anda dari tanda "/".',
-            icon: 'success',
-            confirmButtonText: 'Oke'
+        function addMessage(message) {
+            const messageElement = document.createElement('div');
+            messageElement.classList.add('message');
+
+            const authorSpan = document.createElement('span');
+            authorSpan.classList.add('message-author');
+            authorSpan.textContent = message.username + ':';
+            messageElement.appendChild(authorSpan);
+
+            const textSpan = document.createElement('span');
+            textSpan.textContent = message.text;
+            messageElement.appendChild(textSpan);
+
+            const timestampSpan = document.createElement('span');
+            timestampSpan.classList.add('message-timestamp');
+            const date = new Date(message.timestamp);
+            timestampSpan.textContent = date.toLocaleTimeString();
+            messageElement.appendChild(timestampSpan);
+
+            chatContainer.appendChild(messageElement);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        socket.on('chat history', (history) => {
+            history.forEach(addMessage);
         });
 
-        modeSelect.addEventListener('change', () => {
-            const selectedMode = modeSelect.value;
-            if (["format", "beautify-html", "beautify-css", "beautify-js"].includes(selectedMode)) {
-                settingsContainer.style.display = 'block';
-            } else {
-                settingsContainer.style.display = 'none';
+        socket.on('chat message', (msg) => {
+            addMessage(msg);
+        });
+
+        sendButton.addEventListener('click', () => {
+            const message = messageInput.value;
+            if (message.trim() !== '') {
+                socket.emit('chat message', message);
+                messageInput.value = '';
             }
         });
 
-        cleanButton.addEventListener('click', () => {
-            const code = codeInput.value;
-            const mode = modeSelect.value;
-            errorMessage.style.display = "none";
-            codeOutput.value = "";
-            outputContainer.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i></div>';
-            let formattingOptions = {};
-
-            if (["format", "beautify-html", "beautify-css", "beautify-js"].includes(mode)) {
-                 formattingOptions = {
-                     indent_size: parseInt(indentSizeInput.value),
-                     indent_char: useTabsInput.checked ? '\t' : ' ',
-                 };
-            }
-
-            fetch('/process', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ code, mode, formattingOptions })
-            })
-            .then(response => {
-                if (!response.ok) {
-                    return response.text().then(text => { throw new Error(`HTTP error! Status: ${response.status}.  ${text}`); }); // More informative error
-                }
-                return response.json();
-            })
-            .then(data => {
-                outputContainer.innerHTML = `
-                    <textarea id="codeOutput" readonly placeholder="Hasil">${data.cleanedCode}</textarea>
-                    <button class="copy-button" id="copyButton"><i class="fas fa-copy"></i> Salin</button>
-                    <div id="errorMessage"></div>
-                `;
-
-                const newCodeOutput = document.getElementById('codeOutput');
-                const newCopyButton = document.getElementById('copyButton');
-                const newErrorMessage = document.getElementById('errorMessage');
-
-                newCopyButton.addEventListener('click', () => {
-                    copyToClipboard(newCodeOutput.value);
-                });
-                // Reattach copy button if an error occurs too
-                newErrorMessage.textContent = "";
-                newErrorMessage.style.display = "none";
-
-
-            })
-            .catch(error => {
-                console.error("Error:", error);
-                outputContainer.innerHTML = `
-                    <textarea id="codeOutput" readonly placeholder="Hasil"></textarea>
-                    <button class="copy-button" id="copyButton"><i class="fas fa-copy"></i> Salin</button>
-                    <div id="errorMessage">${error.message || 'An error occurred.'}</div>
-                `;
-
-                const newCodeOutput = document.getElementById('codeOutput');
-                const newCopyButton = document.getElementById('copyButton');
-                const newErrorMessage = document.getElementById('errorMessage');
-
-
-                newCopyButton.addEventListener('click', () => {
-                    copyToClipboard(newCodeOutput.value); // still try to copy even with the error
-                });
-            });
-
-            function copyToClipboard(text) {
-                navigator.clipboard.writeText(text)
-                    .then(() => {
-                        console.log('Text copied to clipboard');
-                    })
-                    .catch(err => {
-                        console.error('Could not copy text: ', err);
-                    });
-            }
-        });
+        function logout() {
+            window.location.href = '/logout';
+        }
     </script>
 </body>
+
 </html>
