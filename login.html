@@ -1,109 +1,199 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Wanzofc Rest API</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <title>Wanzofc  Login & Daftar</title>
     <style>
-        /* CSS Internal */
+        /* Gaya Modern & Futuristik */
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f8f9fa;
-            color: #343a40;
+            background: linear-gradient(135deg, #1e1e2e, #2d2d3d);
+            color: #ffffff;
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
+            margin: 0;
+            overflow: hidden; /* Prevent scrollbars */
         }
 
         .container {
-            background-color: #fff;
+            background-color: rgba(255, 255, 255, 0.08);
             padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 15px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
             width: 350px;
             text-align: center;
         }
 
         h2 {
+            color: #61dafb; /* Neon-ish blue */
+            margin-bottom: 20px;
+            text-shadow: 0 0 10px rgba(97, 218, 251, 0.7); /* Neon glow */
+        }
+
+        .form-group {
             margin-bottom: 25px;
-            color: #007bff;
+            text-align: left;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #cccccc;
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
         }
 
         input[type="text"],
         input[type="password"] {
             width: 100%;
             padding: 12px;
-            margin-bottom: 20px;
-            border: 1px solid #ced4da;
-            border-radius: 6px;
-            font-size: 16px;
-            box-sizing: border-box; /* Important for padding */
+            border: 1px solid #444;
+            border-radius: 8px;
+            background-color: rgba(255, 255, 255, 0.05);
+            color: #ffffff;
+            font-size: 1em;
+            transition: border-color 0.3s ease;
+            box-sizing: border-box; /* Important for padding not to affect width */
+        }
+
+        input[type="text"]:focus,
+        input[type="password"]:focus {
+            border-color: #61dafb;
+            outline: none;
         }
 
         button {
-            background-color: #007bff;
-            color: #fff;
-            padding: 12px 25px;
+            background-color: #61dafb;
+            color: #1e1e2e;
+            padding: 15px 25px;
             border: none;
             border-radius: 8px;
             cursor: pointer;
-            font-size: 18px;
-            transition: background-color 0.2s ease-in-out;
+            font-size: 1.1em;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+            width: 100%;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
         }
 
         button:hover {
-            background-color: #0056b3;
+            background-color: #41b8e0;
         }
 
-        .message {
-            color: red;
-            margin-top: 15px;
+        .error-message {
+            color: #ff4d4d;
+            margin-top: 10px;
+            font-size: 0.9em;
         }
 
-        .fas {
-            margin-right: 8px;
+        .toggle-form {
+            margin-top: 20px;
+            font-size: 0.9em;
+            color: #aaaaaa;
         }
 
-        a {
-            color: #007bff;
+        .toggle-form a {
+            color: #61dafb;
             text-decoration: none;
+            font-weight: bold;
         }
 
-        a:hover {
+        .toggle-form a:hover {
             text-decoration: underline;
         }
 
+        /* Animated Background (Subtle) */
+        body::before {
+            content: "";
+            position: fixed;
+            top: -10%;
+            left: -10%;
+            width: 120%;
+            height: 120%;
+            background: radial-gradient(circle, rgba(97, 218, 251, 0.1) 0%, rgba(0, 0, 0, 0) 50%);
+            z-index: -1;
+            animation: bgMove 10s linear infinite;
+        }
+
+        @keyframes bgMove {
+            0% {
+                transform: translate(0, 0);
+            }
+            100% {
+                transform: translate(5%, 5%);
+            }
+        }
     </style>
 </head>
+
 <body>
     <div class="container">
-        <h2><i class="fas fa-sign-in-alt"></i> Login</h2>
-        <input type="text" id="username" placeholder="Username">
-        <input type="password" id="password" placeholder="Password">
-        <button id="loginButton"><i class="fas fa-sign-in-alt"></i> Login</button>
-        <p class="message" id="loginMessage"></p>
-        <p>Belum punya akun? <a href="signin.html"><i class="fas fa-user-plus"></i> Daftar</a></p>
+        <h2>Wanzofc Chat</h2>
+        <h2>Login</h2>
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="loginUsername">Username:</label>
+                <input type="text" id="loginUsername" name="username" required placeholder="Enter Username">
+            </div>
+            <div class="form-group">
+                <label for="loginPassword">Password:</label>
+                <input type="password" id="loginPassword" name="password" required placeholder="Enter Password">
+            </div>
+            <button type="submit">Login</button>
+            <div class="error-message" id="loginError"></div>
+        </form>
+        <div class="toggle-form">
+            Belum punya akun? <a href="#" id="showRegister">Daftar</a>
+        </div>
+    </div>
+
+    <div class="container" id="registerContainer" style="display: none;">
+        <h2>Wanzofc Chat</h2>
+        <h2>Daftar</h2>
+        <form id="registerForm">
+            <div class="form-group">
+                <label for="registerUsername">Username:</label>
+                <input type="text" id="registerUsername" name="username" required placeholder="Choose Username">
+            </div>
+            <div class="form-group">
+                <label for="registerPassword">Password:</label>
+                <input type="password" id="registerPassword" name="password" required placeholder="Choose Password">
+            </div>
+            <button type="submit">Daftar</button>
+            <div class="error-message" id="registerError"></div>
+        </form>
+        <div class="toggle-form">
+            Sudah punya akun? <a href="#" id="showLogin">Login</a>
+        </div>
     </div>
 
     <script>
-        // JavaScript Internal
-        const usernameInput = document.getElementById('username');
-        const passwordInput = document.getElementById('password');
-        const loginButton = document.getElementById('loginButton');
-        const loginMessage = document.getElementById('loginMessage');
+        // JavaScript (Modern & Futuristik)
+        const loginForm = document.getElementById('loginForm');
+        const registerForm = document.getElementById('registerForm');
+        const loginError = document.getElementById('loginError');
+        const registerError = document.getElementById('registerError');
+        const registerContainer = document.getElementById('registerContainer');
+        const showRegisterLink = document.getElementById('showRegister');
+        const showLoginLink = document.getElementById('showLogin');
 
-        loginButton.addEventListener('click', async () => {
-            const username = usernameInput.value;
-            const password = passwordInput.value;
+        function displayError(element, message) {
+            element.textContent = message;
+        }
 
-            if (!username || !password) {
-                loginMessage.textContent = 'Harap isi username dan password.';
-                return;
-            }
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            loginError.textContent = '';
+
+            const username = document.getElementById('loginUsername').value;
+            const password = document.getElementById('loginPassword').value;
 
             try {
                 const response = await fetch('/login', {
@@ -116,29 +206,60 @@
 
                 const data = await response.json();
 
-                if (data.success) {
-                    // Simpan API key ke localstorage
-                    const getApiKeyResponse = await fetch('/api/getkey', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({ username, password })
-                    });
-                    const getApiKeyData = await getApiKeyResponse.json();
-                    if (getApiKeyData.success) {
-                         localStorage.setItem('apiKey', getApiKeyData.apiKey); // Simpan API Key di Local Storage
-                    }
-                    // window.location.href = '/'; // Redirect ke halaman utama
-                    window.location.href = '/';  // Redirect ke halaman utama
+                if (response.ok) {
+                    window.location.href = '/home';
                 } else {
-                    loginMessage.textContent = data.message;
+                    displayError(loginError, data.error || 'Login gagal.');
                 }
             } catch (error) {
-                loginMessage.textContent = 'Terjadi kesalahan saat login.';
-                console.error('Error:', error);
+                console.error('Error during login:', error);
+                displayError(loginError, 'Terjadi kesalahan jaringan.');
             }
+        });
+
+        registerForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            registerError.textContent = '';
+
+            const username = document.getElementById('registerUsername').value;
+            const password = document.getElementById('registerPassword').value;
+
+            try {
+                const response = await fetch('/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username, password })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    alert('Pendaftaran berhasil. Silakan login.');
+                    registerContainer.style.display = 'none';
+                    document.querySelector('.container').style.display = 'block';
+                } else {
+                    displayError(registerError, data.error || 'Pendaftaran gagal.');
+                }
+            } catch (error) {
+                console.error('Error during registration:', error);
+                displayError(registerError, 'Terjadi kesalahan jaringan.');
+            }
+        });
+
+        showRegisterLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            document.querySelector('.container').style.display = 'none';
+            registerContainer.style.display = 'block';
+        });
+
+        showLoginLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            registerContainer.style.display = 'none';
+            document.querySelector('.container').style.display = 'block';
         });
     </script>
 </body>
+
 </html>
