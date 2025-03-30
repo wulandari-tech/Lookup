@@ -1,107 +1,155 @@
 const express = require('express');
-const bodyParser = require('body-parser');
-const { js_beautify } = require('js-beautify');
-const JavaScriptObfuscator = require('javascript-obfuscator');
-const app = express();
-const port = 3000;
+const http = require('http');
+const { Server } = require('socket.io');
+const fs = require('fs');
+const bcrypt = require('bcrypt');
+const session = require('express-session');
 
-app.use(bodyParser.json());
-app.use(express.static(__dirname));
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'index.html')); // Kirim file index.html
-});
-app.get('/wanzbrayy', (req, res) => {
-    res.sendFile(path.join(__dirname, 'admin.html')); // Kirim file index.html
-});
-app.post('/process', (req, res) => {
-    const { code, mode, formattingOptions } = req.body;
-    let cleanedCode = "";
+const app = express();
+const server = http.createServer(app);
+const io = new Server(server);
+const PORT = process.env.PORT || 3000;
+
+// Middleware untuk parsing data form
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
+
+// Konfigurasi Express Session
+app.use(session({
+    secret: 'your-super-secret-key-wanzofc', // Ganti dengan kunci rahasia yang sangat kuat
+    resave: false,
+    saveUninitialized: true,
+    cookie: { secure: false } // Set to true in production with HTTPS
+}));
+
+
+// File database (simulasi sederhana)
+const DB_FILE = 'database.json';
+
+// Fungsi untuk membaca data dari database
+function readDB() {
+    try {
+        const data = fs.readFileSync(DB_FILE, 'utf8');
+        return JSON.parse(data);
+    } catch (error) {
+        // Jika file tidak ada atau gagal dibaca, kembalikan struktur awal
+        return { users: [], messages: [] };
+    }
+}
+
+// Fungsi untuk menyimpan data ke database
+function writeDB(data) {
+    fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2), 'utf8');
+}
+
+// Endpoint untuk pendaftaran
+app.post('/register', async (req, res) => {
+    const { username, password } = req.body;
+    const db = readDB();
+
+    // Validasi sederhana
+    if (!username || !password) {
+        return res.status(400).json({ error: 'Username dan password harus diisi.' });
+    }
+
+    if (db.users.find(user => user.username === username)) {
+        return res.status(400).json({ error: 'Username sudah digunakan.' });
+    }
 
     try {
-        switch (mode) {
-            case "clean":
-                cleanedCode = removeComments(code);
-                break;
-            case "minify":
-                cleanedCode = minifyCode(code);
-                break;
-            case "format":
-                cleanedCode = formatCode(code, formattingOptions);
-                break;
-            case "beautify-html":
-                cleanedCode = js_beautify.html(code, formattingOptions);
-                break;
-            case "beautify-css":
-                cleanedCode = js_beautify.css(code, formattingOptions);
-                break;
-            case "beautify-js":
-                cleanedCode = js_beautify(code, formattingOptions);
-                break;
-            case "obfuscate-js":
-                cleanedCode = obfuscateJS(code);
-                break;
-            case "convert-to-uppercase":
-                cleanedCode = code.toUpperCase();
-                break;
-            case "convert-to-lowercase":
-                cleanedCode = code.toLowerCase();
-                break;
-            default:
-                cleanedCode = removeComments(code);
+        const hashedPassword = await bcrypt.hash(password, 10); // Hash password
+        db.users.push({ username, password: hashedPassword }); // Simpan hash
+        writeDB(db);
+        res.status(201).json({ message: 'Pendaftaran berhasil.' });
+    } catch (error) {
+        console.error('Error hashing password:', error);
+        res.status(500).json({ error: 'Terjadi kesalahan server.' });
+    }
+});
+
+
+// Endpoint untuk login
+app.post('/login', async (req, res) => {
+    const { username, password } = req.body;
+    const db = readDB();
+    const user = db.users.find(user => user.username === username);
+
+    if (!user) {
+        return res.status(400).json({ error: 'Username atau password salah.' });
+    }
+
+    try {
+        const passwordMatch = await bcrypt.compare(password, user.password);
+        if (passwordMatch) {
+            req.session.user = { username: user.username }; // Simpan informasi user di session
+            res.status(200).json({ message: 'Login berhasil.' });
+        } else {
+            res.status(400).json({ error: 'Username atau password salah.' });
         }
     } catch (error) {
-        console.error("Error processing code:", error);
-        return res.status(500).json({ error: "Terjadi kesalahan saat memproses kode." });
+        console.error('Error comparing password:', error);
+        res.status(500).json({ error: 'Terjadi kesalahan server.' });
     }
-
-    res.json({ cleanedCode });
 });
 
-function removeComments(code) {
-    let cleaned = code.replace(/\/\/.*$/gm, "");
-    cleaned = cleaned.replace(/\/\*[\s\S]*?\*\//gm, "");
-    return cleaned;
-}
-
-function minifyCode(code) {
-    return code.replace(/\s+/gm, ' ');
-}
-
-function formatCode(code, options = {}) {
-    try {
-        return js_beautify(code, { indent_size: options.indent_size || 2, indent_char: options.indent_char || ' ' });
-    } catch (error) {
-        console.error("Error formatting code:", error);
-        return code; // Return original code on error
+// Middleware untuk mengecek apakah user sudah login
+function isAuthenticated(req, res, next) {
+    if (req.session.user) {
+        next(); // Lanjutkan jika sudah login
+    } else {
+        res.redirect('/login'); // Redirect ke halaman login jika belum
     }
 }
 
-function obfuscateJS(code) {
-    try {
-        const obfuscationResult = JavaScriptObfuscator.obfuscate(code, {
-           //Konfigurasi Obfuscator (sesuaikan sesuai kebutuhan)
-           compact: true,
-            controlFlowFlattening: true,
-            deadCodeInjection: true,
-            debugProtection: false,
-            debugProtectionInterval: false,
-            disableConsoleOutput: true,
-            identifierNamesGenerator: 'hexadecimal',
-            log: false,
-            renameGlobals: false,
-            rotateUnicodeArray: true,
-            selfDefending: true,
-            stringArray: true,
-            stringArrayEncoding: ['base64'],
-            stringArrayThreshold: 0.75,
-        });
-        return obfuscationResult.getObfuscatedCode();
-    } catch (error) {
-        console.error("Error obfuscating JavaScript:", error);
-        return code; // Return original code if obfuscation fails
-    }
-}
+// Endpoint untuk logout
+app.get('/logout', (req, res) => {
+    req.session.destroy((err) => {
+        if (err) {
+            console.error('Error destroying session:', err);
+            return res.status(500).send('Logout gagal.');
+        }
+        res.redirect('/login'); // Redirect ke halaman login setelah logout
+    });
+});
 
-app.listen(port, () => {
-    console.log(`Server berjalan di http://localhost:${port}`);
+
+// Route untuk menampilkan halaman home (setelah login)
+app.get('/home', isAuthenticated, (req, res) => {
+    res.sendFile(__dirname + '/home.html');
+});
+
+// Route untuk menampilkan halaman login (jika belum login)
+app.get('/login', (req, res) => {
+    if (req.session.user) {
+        return res.redirect('/home');
+    }
+    res.sendFile(__dirname + '/index.html'); // Render halaman login
+});
+
+
+// Socket.IO
+io.on('connection', (socket) => {
+    console.log('User connected');
+
+    // Membaca history chat saat koneksi baru
+    const db = readDB();
+    socket.emit('chat history', db.messages);
+
+    socket.on('chat message', (msg) => {
+        const username = socket.handshake.session?.user?.username || 'Guest';
+
+        const db = readDB();
+        db.messages.push({ username, text: msg, timestamp: new Date() });
+        writeDB(db);
+
+        io.emit('chat message', { username, text: msg, timestamp: new Date() });
+    });
+
+    socket.on('disconnect', () => {
+        console.log('User disconnected');
+    });
+});
+
+server.listen(PORT, () => {
+    console.log(`Server berjalan di http://localhost:${PORT}`);
 });
