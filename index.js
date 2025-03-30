@@ -4,6 +4,7 @@ const { Server } = require('socket.io');
 const fs = require('fs');
 const bcrypt = require('bcrypt');
 const session = require('express-session');
+const multer = require('multer'); // Import multer
 
 const app = express();
 const server = http.createServer(app);
@@ -21,6 +22,23 @@ app.use(session({
     saveUninitialized: true,
     cookie: { secure: false } // Set to true in production with HTTPS
 }));
+
+
+// Konfigurasi Multer untuk penyimpanan file
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        const uploadDir = 'uploads'; // Direktori untuk menyimpan file yang diunggah
+        if (!fs.existsSync(uploadDir)) {
+            fs.mkdirSync(uploadDir); // Buat direktori jika belum ada
+        }
+        cb(null, uploadDir);
+    },
+    filename: (req, file, cb) => {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        cb(null, file.fieldname + '-' + uniqueSuffix + '.' + file.originalname.split('.').pop());
+    }
+});
+const upload = multer({ storage: storage });
 
 
 // File database (simulasi sederhana)
@@ -112,7 +130,6 @@ app.get('/logout', (req, res) => {
     });
 });
 
-
 // Route untuk menampilkan halaman home (setelah login)
 app.get('/home', isAuthenticated, (req, res) => {
     res.sendFile(__dirname + '/index.html');
@@ -126,6 +143,41 @@ app.get('/', (req, res) => {
     res.sendFile(__dirname + '/login.html'); // Render halaman login
 });
 
+// Endpoint untuk mengirim chat dan file
+app.post('/chat', isAuthenticated, upload.single('file'), (req, res) => {
+    const username = req.session.user.username;
+    const { message } = req.body;
+    let fileInfo = null;
+
+    if (req.file) {
+        fileInfo = {
+            name: req.file.originalname,
+            type: req.file.mimetype,
+            data: `/uploads/${req.file.filename}` // Assuming you serve static files from 'uploads'
+        };
+    }
+
+    const db = readDB();
+    const newMessage = {
+        username: username,
+        text: message,
+        timestamp: new Date(),
+        file: fileInfo
+    };
+
+    db.messages.push(newMessage);
+    writeDB(db);
+    io.emit('chat message', newMessage);
+
+    res.json({ success: true });
+});
+
+// Endpoint untuk mendapatkan informasi profil
+app.get('/profile', isAuthenticated, (req, res) => {
+    const username = req.session.user.username;
+    res.json({ username: username }); // Tambahkan informasi lain jika ada di database
+});
+
 
 // Socket.IO
 io.on('connection', (socket) => {
@@ -135,20 +187,14 @@ io.on('connection', (socket) => {
     const db = readDB();
     socket.emit('chat history', db.messages);
 
-    socket.on('chat message', (msg) => {
-        const username = socket.handshake.session?.user?.username || 'Guest';
-
-        const db = readDB();
-        db.messages.push({ username, text: msg, timestamp: new Date() });
-        writeDB(db);
-
-        io.emit('chat message', { username, text: msg, timestamp: new Date() });
-    });
-
     socket.on('disconnect', () => {
         console.log('User disconnected');
     });
 });
+
+
+// Serve static files (images, audio, etc.)
+app.use('/uploads', express.static('uploads'));
 
 server.listen(PORT, () => {
     console.log(`Server berjalan di http://localhost:${PORT}`);
