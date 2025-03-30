@@ -115,15 +115,15 @@ app.get('/logout', (req, res) => {
 
 // Route untuk menampilkan halaman home (setelah login)
 app.get('/home', isAuthenticated, (req, res) => {
-    res.sendFile(__dirname + '/home.html');
+    res.sendFile(__dirname + '/index.html');
 });
 
 // Route untuk menampilkan halaman login (jika belum login)
-app.get('/login', (req, res) => {
+app.get('/', (req, res) => {
     if (req.session.user) {
         return res.redirect('/home');
     }
-    res.sendFile(__dirname + '/index.html'); // Render halaman login
+    res.sendFile(__dirname + '/login.html'); // Render halaman login
 });
 
 
