@@ -8,7 +8,7 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIO(server, {
     cors: {
-        origin: "*", // Allow any origin (for development - NOT recommended for production)
+        origin: "https://wanzofc-chat.up.railway.app", // Allow any origin (for development - NOT recommended for production)
         methods: ["GET", "POST"]
     }
 });
