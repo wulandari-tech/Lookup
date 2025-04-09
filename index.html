@@ -246,10 +246,18 @@
 
         let imagePreview = null;
         let selectedImage = null;
-        const API_URL = 'http://localhost:3000';
+        const API_URL = 'http://localhost:3000'; //  Pastikan ini benar
 
         // Inisialisasi Socket.IO
         const socket = io(API_URL);
+
+        socket.on('connect', () => {
+            console.log('Connected to Socket.IO server'); // Log koneksi
+        });
+
+        socket.on('connect_error', (error) => {
+            console.error('Socket.IO connection error:', error); // Log error koneksi
+        });
 
         function addMessage(sender, text, timestamp, isSent, imageUrl) {
             console.log('Adding message:', { sender, text, timestamp, isSent, imageUrl });
@@ -329,7 +337,7 @@
                 const chatHistory = await response.json();
                 console.log('Chat history loaded:', chatHistory);
                 chatHistory.forEach(message => {
-                    addMessage(message.sender, message.text, message.timestamp, false, message.imageUrl); //  isSent: false, karena ini pesan lama
+                    addMessage(message.sender, message.text, message.timestamp, false, message.imageUrl);
                 });
             } catch (error) {
                 console.error('Error loading chat history:', error);
@@ -345,6 +353,7 @@
         }
 
         sendButton.addEventListener('click', () => {
+            console.log('Send button clicked!'); // Tambahkan logging di sini
             const messageText = messageInput.value.trim();
             const nickname = nicknameInput.value.trim();
             const timestamp = getTimestamp();
@@ -370,6 +379,7 @@
                 isSent: true,
                 imageUrl: imageUrl
             };
+            console.log('Message to send:', { messageText, nickname, imageUrl }); // Tambahkan logging
             console.log('Sending message to server:', message);
             socket.emit('chat message', message); // Kirim pesan ke server melalui Socket.IO
             messageInput.value = '';
