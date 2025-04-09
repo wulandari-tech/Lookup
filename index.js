@@ -1,200 +1,116 @@
 const express = require('express');
 const http = require('http');
-const { Server } = require('socket.io');
+const socketIO = require('socket.io');
 const fs = require('fs');
-const bcrypt = require('bcrypt');
-const session = require('express-session');
-const multer = require('multer'); // Import multer
+const path = require('path');
 
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server);
+const io = socketIO(server);
 const PORT = process.env.PORT || 3000;
 
-// Middleware untuk parsing data form
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
+app.use(express.static(__dirname));
 
-// Konfigurasi Express Session
-app.use(session({
-    secret: 'your-super-secret-key-wanzofc', // Ganti dengan kunci rahasia yang sangat kuat
-    resave: false,
-    saveUninitialized: true,
-    cookie: { secure: false } // Set to true in production with HTTPS
-}));
-
-
-// Konfigurasi Multer untuk penyimpanan file
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        const uploadDir = 'uploads'; // Direktori untuk menyimpan file yang diunggah
-        if (!fs.existsSync(uploadDir)) {
-            fs.mkdirSync(uploadDir); // Buat direktori jika belum ada
-        }
-        cb(null, uploadDir);
-    },
-    filename: (req, file, cb) => {
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-        cb(null, file.fieldname + '-' + uniqueSuffix + '.' + file.originalname.split('.').pop());
-    }
-});
-const upload = multer({ storage: storage });
-
-
-// File database (simulasi sederhana)
-const DB_FILE = 'database.json';
-
-// Fungsi untuk membaca data dari database
 function readDB() {
     try {
-        const data = fs.readFileSync(DB_FILE, 'utf8');
+        const data = fs.readFileSync(path.join(__dirname, 'db.json'), 'utf8');
         return JSON.parse(data);
     } catch (error) {
-        // Jika file tidak ada atau gagal dibaca, kembalikan struktur awal
-        return { users: [], messages: [] };
+        console.error('Error reading db.json:', error);
+        return { users: [], messages: [], polls:[] }; // Default value, add polls
     }
 }
 
-// Fungsi untuk menyimpan data ke database
 function writeDB(data) {
-    fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2), 'utf8');
-}
-
-// Endpoint untuk pendaftaran
-app.post('/register', async (req, res) => {
-    const { username, password } = req.body;
-    const db = readDB();
-
-    // Validasi sederhana
-    if (!username || !password) {
-        return res.status(400).json({ error: 'Username dan password harus diisi.' });
-    }
-
-    if (db.users.find(user => user.username === username)) {
-        return res.status(400).json({ error: 'Username sudah digunakan.' });
-    }
-
     try {
-        const hashedPassword = await bcrypt.hash(password, 10); // Hash password
-        db.users.push({ username, password: hashedPassword }); // Simpan hash
-        writeDB(db);
-        res.status(201).json({ message: 'Pendaftaran berhasil.' });
+        fs.writeFileSync(path.join(__dirname, 'db.json'), JSON.stringify(data, null, 2));
     } catch (error) {
-        console.error('Error hashing password:', error);
-        res.status(500).json({ error: 'Terjadi kesalahan server.' });
-    }
-});
-
-
-// Endpoint untuk login
-app.post('/login', async (req, res) => {
-    const { username, password } = req.body;
-    const db = readDB();
-    const user = db.users.find(user => user.username === username);
-
-    if (!user) {
-        return res.status(400).json({ error: 'Username atau password salah.' });
-    }
-
-    try {
-        const passwordMatch = await bcrypt.compare(password, user.password);
-        if (passwordMatch) {
-            req.session.user = { username: user.username }; // Simpan informasi user di session
-            res.status(200).json({ message: 'Login berhasil.' });
-        } else {
-            res.status(400).json({ error: 'Username atau password salah.' });
-        }
-    } catch (error) {
-        console.error('Error comparing password:', error);
-        res.status(500).json({ error: 'Terjadi kesalahan server.' });
-    }
-});
-
-// Middleware untuk mengecek apakah user sudah login
-function isAuthenticated(req, res, next) {
-    if (req.session.user) {
-        next(); // Lanjutkan jika sudah login
-    } else {
-        res.redirect('/login'); // Redirect ke halaman login jika belum
+        console.error('Error writing to db.json:', error);
     }
 }
 
-// Endpoint untuk logout
-app.get('/logout', (req, res) => {
-    req.session.destroy((err) => {
-        if (err) {
-            console.error('Error destroying session:', err);
-            return res.status(500).send('Logout gagal.');
-        }
-        res.redirect('/login'); // Redirect ke halaman login setelah logout
-    });
-});
-
-// Route untuk menampilkan halaman home (setelah login)
-app.get('/home', isAuthenticated, (req, res) => {
-    res.sendFile(__dirname + '/index.html');
-});
-
-// Route untuk menampilkan halaman login (jika belum login)
-app.get('/', (req, res) => {
-    if (req.session.user) {
-        return res.redirect('/home');
-    }
-    res.sendFile(__dirname + '/login.html'); // Render halaman login
-});
-
-// Endpoint untuk mengirim chat dan file
-app.post('/chat', isAuthenticated, upload.single('file'), (req, res) => {
-    const username = req.session.user.username;
-    const { message } = req.body;
-    let fileInfo = null;
-
-    if (req.file) {
-        fileInfo = {
-            name: req.file.originalname,
-            type: req.file.mimetype,
-            data: `/uploads/${req.file.filename}` // Assuming you serve static files from 'uploads'
-        };
-    }
-
-    const db = readDB();
-    const newMessage = {
-        username: username,
-        text: message,
-        timestamp: new Date(),
-        file: fileInfo
-    };
-
-    db.messages.push(newMessage);
-    writeDB(db);
-    io.emit('chat message', newMessage);
-
-    res.json({ success: true });
-});
-
-// Endpoint untuk mendapatkan informasi profil
-app.get('/profile', isAuthenticated, (req, res) => {
-    const username = req.session.user.username;
-    res.json({ username: username }); // Tambahkan informasi lain jika ada di database
-});
-
-
-// Socket.IO
 io.on('connection', (socket) => {
-    console.log('User connected');
+    console.log('Pengguna terhubung:', socket.id);
 
-    // Membaca history chat saat koneksi baru
+    // Load chat history when a user connects
     const db = readDB();
-    socket.emit('chat history', db.messages);
+    socket.emit('chatHistory', db.messages);
 
+    socket.on('userJoin', (username, callback) => {
+        const db = readDB();
+        const newUser = { id: socket.id, username: username, position: { x: 0, y: 0, z: 0 } };
+        db.users.push(newUser);
+        writeDB(db);
+        socket.username = username;
+        io.emit('userList', db.users);
+        callback({ status: 'success', message: 'User joined', user: newUser });
+    });
+
+    socket.on('chatMessage', (msg) => {
+        const db = readDB();
+        const newMessage = {
+            id: socket.id,
+            username: socket.username,
+            message: msg,
+            timestamp: new Date()
+        };
+        db.messages.push(newMessage);
+        writeDB(db);
+        io.emit('message', newMessage);
+    });
+
+    socket.on('userMove', (position) => {
+        const db = readDB();
+        const userIndex = db.users.findIndex(user => user.id === socket.id);
+        if (userIndex !== -1) {
+            db.users[userIndex].position = position;
+            writeDB(db);
+            socket.broadcast.emit('userMoved', { id: socket.id, position: position });
+        }
+    });
+
+    // Polling Event - Example
+    socket.on('startPoll', (pollData) => { // Contoh sederhana untuk start poll dari server
+        const db = readDB();
+        const newPoll = {
+            id: Date.now(), // Generate a simple ID
+            question: pollData.question,
+            options: pollData.options,
+            votes: pollData.options.map(() => 0), // Initialize votes
+            totalVotes: 0,
+            voters: [] // Store voters to prevent multiple votes
+        };
+
+        db.polls = db.polls || [];
+        db.polls.push(newPoll);
+        writeDB(db);
+        io.emit('newPoll', newPoll); // Send to all clients
+    });
+
+    socket.on('vote', (voteData) => {
+        const db = readDB();
+        const poll = db.polls.find(p => p.id === voteData.pollId);
+        if (poll && voteData.optionIndex >= 0 && voteData.optionIndex < poll.options.length && !poll.voters.includes(socket.id)) {
+           poll.votes[voteData.optionIndex]++;
+           poll.totalVotes++;
+           poll.voters.push(socket.id); // Mark user as voted
+           writeDB(db);
+           io.emit('pollResults', {
+                question: poll.question,
+                options: poll.options,
+                votes: poll.votes,
+                totalVotes: poll.totalVotes
+           });
+        }
+    });
     socket.on('disconnect', () => {
-        console.log('User disconnected');
+        console.log('Pengguna terputus:', socket.id);
+        const db = readDB();
+        db.users = db.users.filter(user => user.id !== socket.id);
+        writeDB(db);
+        io.emit('userList', db.users);
     });
 });
-
-
-// Serve static files (images, audio, etc.)
-app.use('/uploads', express.static('uploads'));
 
 server.listen(PORT, () => {
     console.log(`Server berjalan di http://localhost:${PORT}`);
