@@ -310,12 +310,15 @@
         }
 
         async function loadChatHistory() {
+            console.log('Loading chat history...');
             try {
                 const response = await fetch(`${API_URL}/chathistory`);
+                console.log('Fetch response:', response);
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
                 const chatHistory = await response.json();
+                console.log('Chat history loaded:', chatHistory);
                 chatHistory.forEach(message => {
                     addMessage(message.sender, message.text, message.timestamp, message.isSent, message.imageUrl);
                 });
