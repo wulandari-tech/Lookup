@@ -1,437 +1,535 @@
 <!DOCTYPE html>
-<html lang="id">
+<html>
 <head>
-    <meta charset="UTF-8">
+    <title>Wanzofc Chat </title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>wanzofc chat</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
-        integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg=="
-        crossorigin="anonymous" referrerpolicy="no-referrer" />
     <style>
+        /* =====================
+           GLOBAL STYLES
+           ===================== */
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #1e1e2e, #2d2d3d);
-            color: #ffffff;
             margin: 0;
+            overflow: hidden;
+            background-color: #1a1a1a; /* Dark Background */
+            color: #e0e0e0; /* Light Text */
+        }
+        /* =====================
+           LAYOUT (Base)
+           ===================== */
+        #container {
             display: flex;
             flex-direction: column;
-            min-height: 100vh; 
-            overflow-x: hidden; 
+            height: 100vh; /* Full viewport height */
         }
-
-        .header {
-            background-color: rgba(255, 255, 255, 0.08);
-            padding: 15px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-            border-bottom-left-radius: 15px;
-            border-bottom-right-radius: 15px;
-        }
-
-        .header-title {
-            font-size: 1.5em;
-            font-weight: bold;
-            color: #61dafb;
-            text-shadow: 0 0 10px rgba(97, 218, 251, 0.7);
-        }
-
-        .logout-button {
-            background-color: #ff4d4d;
-            color: white;
-            border: none;
-            padding: 10px 18px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 1em;
-            font-weight: bold;
-            transition: background-color 0.3s ease;
-            letter-spacing: 0.05em;
-            text-transform: uppercase;
-        }
-
-        .logout-button:hover {
-            background-color: #cc3f3f;
-        }
-
-        /* Profile Section */
-        .profile-container {
-            display: flex;
-            align-items: center;
-        }
-
-        .profile-picture {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background-color: #333;
-            margin-right: 10px;
-            overflow: hidden; /* Ensure image fits */
-        }
-
-        .profile-picture img {
+        #scene-container {
             width: 100%;
-            height: 100%;
-            object-fit: cover; /* Maintain aspect ratio and crop if necessary */
+            height: 80vh; /* 80% of viewport height */
+            position: relative;
+            background-color: #000; /* Black for 3D Background */
         }
-
-        .profile-username {
-            font-weight: bold;
-        }
-
-        .chat-container {
+        #chatbox {
             flex-grow: 1;
-            padding: 20px;
-            overflow-y: auto; /* Enable vertical scroll for chat content */
-            background-color: rgba(255, 255, 255, 0.05);
-            margin: 20px;
-            border-radius: 15px;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
-            backdrop-filter: blur(8px);
-            scrollbar-width: none; /* Firefox */
+            width: 100%;
+            background-color: rgba(20, 20, 20, 0.9); /* Dark Transparent Background */
+            padding: 10px;
+            box-sizing: border-box;
+            overflow-y: scroll;
         }
-
-        .chat-container::-webkit-scrollbar {
-            display: none; /* Chrome, Safari, Edge */
-        }
-
-
-        .message {
-            margin-bottom: 12px;
-            padding: 12px 15px;
-            border-radius: 12px;
-            background-color: rgba(255, 255, 255, 0.08);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-        }
-
-        .message-author {
-            font-weight: bold;
-            color: #61dafb;
-            margin-right: 8px;
-            font-size: 0.9em;
-        }
-
-        .message-timestamp {
-            color: #aaa;
-            font-size: 0.8em;
-            margin-left: 12px;
-        }
-
-        .input-container {
-            padding: 20px;
+        #message-input-area {
             display: flex;
-            align-items: center;
-            background-color: rgba(255, 255, 255, 0.08);
-            border-radius: 15px;
-            margin: 20px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-            backdrop-filter: blur(8px);
-            padding-left: 10px; /* Add padding to the left */
+            gap: 10px;
+            padding: 10px;
+            background-color: rgba(20, 20, 20, 0.9); /* Dark Transparent Background */
+            box-sizing: border-box;
+            position: sticky;
+            bottom: 0;
         }
-
-        #messageInput {
-            flex-grow: 1;
-            padding: 14px;
-            border: 1px solid #444;
+        /* =====================
+           UI ELEMENTS
+           ===================== */
+        #login-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(255, 255, 255, 0.9); /* Transparent white */
+            padding: 20px;
             border-radius: 8px;
-            background-color: rgba(255, 255, 255, 0.05);
-            color: #ffffff;
-            font-size: 1em;
-            transition: border-color 0.3s ease;
-            margin-right: 15px;
-            box-sizing: border-box; /* Important */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5); /* Increased Shadow */
+            text-align: center;
+            z-index: 10; /* Ensure it's on top */
         }
-
-        #messageInput:focus {
-            border-color: #61dafb;
-            outline: none;
+        #login-container input[type="text"], #message-input {
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #333;
+            border-radius: 6px;
+            width: 100%;
+            box-sizing: border-box;
+            background-color: #333;
+            color: #e0e0e0;
         }
-
-        #sendButton {
-            background-color: #61dafb;
-            color: #1e1e2e;
-            padding: 14px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 1em;
-            font-weight: bold;
-            transition: background-color 0.3s ease;
-            margin-left: -10px; /* Added to move the button to the left */
-        }
-
-        #sendButton:hover {
-            background-color: #41b8e0;
-        }
-
-        #fileInput {
-            display: none; /* Hide the actual file input */
-        }
-
-        .file-upload-button {
-            background-color: #3498db; /* Blue */
+        #login-container button, #send-button {
+            padding: 12px 20px;
+            background-color: #5cb85c; /* Green Button */
             color: white;
             border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.2s ease;
+        }
+        #login-container button:hover, #send-button:hover {
+            background-color: #4cae4c;
+        }
+
+        #chatbox > div {
+            margin-bottom: 8px;
             padding: 10px 12px;
             border-radius: 8px;
-            cursor: pointer;
-            font-size: 1em;
-            margin-right: 10px;
-            transition: background-color 0.3s ease;
+            word-break: break-word; /* Handle long words */
+        }
+        .message {
+            background-color: #333;
+        }
+        .my-message {
+            background-color: #2e6da4; /* Darker Blue for My Messages */
         }
 
-        .file-upload-button:hover {
-            background-color: #2980b9;
-        }
-
-        #filePreview {
+        /* =====================
+           POLLING STYLES
+           ===================== */
+        #polling-area {
+            background-color: rgba(20, 20, 20, 0.9);
+            padding: 10px;
             margin-top: 10px;
-            color: #ccc;
-            font-size: 0.9em;
-        }
-
-        #filePreview img, #filePreview video {
-            max-width: 100px; /* Adjust as needed */
-            max-height: 100px;
             border-radius: 8px;
-            margin-right: 5px;
         }
-        #filePreview audio{
-            width: 100px;
+        .poll-question {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .poll-option {
+            display: block;
+            padding: 8px 12px;
+            margin-bottom: 5px;
+            border: 1px solid #555;
+            border-radius: 4px;
+            background-color: #444;
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+        .poll-option:hover {
+            background-color: #555;
+        }
+        .poll-result-bar {
+            height: 10px;
+            background-color: #666;
+            margin-top: 2px;
+            border-radius: 5px;
+            position: relative; /* For text inside */
+        }
+        .poll-result-fill {
+            height: 100%;
+            background-color: #5cb85c;
+            border-radius: 5px;
+        }
+        .poll-result-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: black;
+            font-size: 0.75rem;
         }
 
-        /* Animated Background (Subtle) */
-        body::before {
-            content: "";
-            position: fixed;
-            top: -10%;
-            left: -10%;
-            width: 120%;
-            height: 120%;
-            background: radial-gradient(circle, rgba(97, 218, 251, 0.1) 0%, rgba(0, 0, 0, 0) 50%);
-            z-index: -1;
-            animation: bgMove 10s linear infinite;
+        /* =====================
+           RESPONSIVE DESIGN (Media Queries)
+           ===================== */
+        @media (max-width: 768px) { /* For smaller screens */
+            #scene-container {
+                height: 60vh; /* Adjust height */
+            }
+            #login-container {
+                width: 90%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+            }
+        }
+        /* =====================
+           3D ENHANCEMENTS
+           ===================== */
+          /* Misalnya, untuk efek kabut */
+        #fog {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0.8) 100%);
+            z-index: 1; /* Above the 3D content */
         }
 
-        @keyframes bgMove {
-            0% {
-                transform: translate(0, 0);
-            }
-            100% {
-                transform: translate(5%, 5%);
-            }
+        /* Additional Style for 2030 */
+        /* Glow effect */
+        .glow-text {
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.7);
         }
     </style>
 </head>
-
 <body>
-    <div class="header">
-        <div class="profile-container">
-            <div class="profile-picture">
-                <!-- Add a default profile image or load user's image here -->
-                <img src="default-profile.png" alt="Profile Picture">
-            </div>
-            <div class="profile-username" id="profileUsername"></div>
+
+    <div id="container">
+        <div id="scene-container">
+            <div id="fog"></div> <!-- Add fog -->
         </div>
-        <button class="logout-button" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+        <div id="chatbox"></div>
+        <div id="message-input-area">
+            <input type="text" id="message-input" placeholder="Ketik pesan...">
+            <button id="send-button">Kirim</button>
+        </div>
     </div>
 
-    <div class="chat-container" id="chatContainer">
-        <!-- Pesan chat akan ditampilkan di sini -->
+    <div id="login-container">
+        <h1 class="glow-text">Wanzofc Chat </h1>
+        <input type="text" id="username-input" placeholder="Masukkan nama pengguna">
+        <button id="login-button">Gabung</button>
     </div>
 
-    <div class="input-container">
-        <button class="file-upload-button" onclick="document.getElementById('fileInput').click()"><i
-                class="fas fa-paperclip"></i></button>
-        <input type="file" id="fileInput" style="display: none;">
-        <input type="text" id="messageInput" placeholder="Ketik pesan..." autocomplete="off">
-        <button id="sendButton"><i class="fas fa-paper-plane"></i></button>
-        <div id="filePreview"></div> <!-- Area to show file previews -->
-    </div>
-
-    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.js" integrity="sha512-XkCmC0FwB5a0t37v9hH09XwE7e4X0xX3+gV2qXkKjNl8mD6o/u9J21pL9fD26b2eWb/c/PzYh3Iq/fO3p2vD9w==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://threejs.org/build/three.js"></script>
     <script>
-        // JavaScript (Modern & Futuristik)
+        // =====================
+        //  SETUP THREE.JS
+        // =====================
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / (window.innerHeight * 0.8), 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true }); // Better visuals
+        renderer.setSize(window.innerWidth, window.innerHeight * 0.8);
+        renderer.setClearColor(0x000000, 0); // Transparent background
+        document.getElementById('scene-container').appendChild(renderer.domElement);
+
+        // Kamera awal
+        camera.position.z = 5;
+
+        // Ambient light
+        const ambientLight = new THREE.AmbientLight(0x222222); // Dim ambient light
+        scene.add(ambientLight);
+
+        // Directional light with slightly blue color
+        const directionalLight = new THREE.DirectionalLight(0x9999ff, 0.7);
+        directionalLight.position.set(1, 1, 1);
+        scene.add(directionalLight);
+
+        // Create a simple starfield
+        function createStarfield() {
+            const starGeometry = new THREE.BufferGeometry();
+            const starMaterial = new THREE.PointsMaterial({ color: 0xffffff, size: 0.05 }); // Smaller stars
+            const starPositions = [];
+            for (let i = 0; i < 500; i++) { // More stars
+                const x = (Math.random() - 0.5) * 20;
+                const y = (Math.random() - 0.5) * 20;
+                const z = -Math.random() * 50; // Further away
+                starPositions.push(x, y, z);
+            }
+            starGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starPositions, 3));
+            const stars = new THREE.Points(starGeometry, starMaterial);
+            scene.add(stars);
+        }
+
+        createStarfield();
+
+        // Simple, futuristic-looking ground (using a plane)
+        const groundGeometry = new THREE.PlaneGeometry(20, 20);
+        const groundMaterial = new THREE.MeshPhongMaterial({ color: 0x333333, specular: 0x111111, shininess: 50 }); // Add specular
+        const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+        ground.rotation.x = -Math.PI / 2;
+        ground.position.y = -1;  // Below the grid
+        scene.add(ground);
+
+        // Add a simple floating platform
+        const platformGeometry = new THREE.BoxGeometry(2, 0.2, 2);
+        const platformMaterial = new THREE.MeshPhongMaterial({ color: 0x444444, specular: 0x222222, shininess: 80 });
+        const platform = new THREE.Mesh(platformGeometry, platformMaterial);
+        platform.position.set(2, 0.5, 0);
+        scene.add(platform);
+
+        // Add a simple floating cylinder
+        const cylinderGeometry = new THREE.CylinderGeometry(0.3, 0.3, 1, 32); // Reduced height
+        const cylinderMaterial = new THREE.MeshPhongMaterial({ color: 0x666666, specular: 0x333333, shininess: 100 });
+        const cylinder = new THREE.Mesh(cylinderGeometry, cylinderMaterial);
+        cylinder.position.set(-2, 0.5, 1); // Moved slightly
+        scene.add(cylinder);
+
+        // =====================
+        //  SOCKET.IO
+        // =====================
         const socket = io();
-        const chatContainer = document.getElementById('chatContainer');
-        const messageInput = document.getElementById('messageInput');
-        const sendButton = document.getElementById('sendButton');
-        const fileInput = document.getElementById('fileInput');
-        const filePreview = document.getElementById('filePreview');
-        const profileUsername = document.getElementById('profileUsername');
 
-        // Function to add messages
-        function addMessage(message) {
-            const messageElement = document.createElement('div');
-            messageElement.classList.add('message');
+        // =====================
+        //  VARIABEL GLOBAL
+        // =====================
+        let username = null;
+        const userAvatars = {};
+        let isMoving = false;
+        const moveSpeed = 0.1;
+        let currentPoll = null; // To track the current poll
 
-            const authorSpan = document.createElement('span');
-            authorSpan.classList.add('message-author');
-            authorSpan.textContent = message.username + ':';
-            messageElement.appendChild(authorSpan);
+        // =====================
+        //  UI ELEMENTS
+        // =====================
+        const loginContainer = document.getElementById('login-container');
+        const usernameInput = document.getElementById('username-input');
+        const loginButton = document.getElementById('login-button');
+        const chatbox = document.getElementById('chatbox');
+        const messageInput = document.getElementById('message-input');
+        const sendButton = document.getElementById('send-button');
+        const chatboxContainer = document.getElementById('chatbox');
+        const fogDiv = document.getElementById('fog');  //  Fog element
 
-            const textSpan = document.createElement('span');
-            textSpan.textContent = message.text;
-            messageElement.appendChild(textSpan);
+        // =====================
+        //  FUNGSI UTAMA
+        // =====================
 
-            //Display image or file previews here.
-            if (message.file) {
-                if (message.file.type.startsWith('image/')) {
-                    const img = document.createElement('img');
-                    img.src = message.file.data;
-                    img.alt = message.file.name;
-                    img.style.maxWidth = '100px'; // Or your desired size
-                    messageElement.appendChild(img);
-                } else if (message.file.type.startsWith('audio/')) {
-                    const audio = document.createElement('audio');
-                    audio.controls = true;
-                    const source = document.createElement('source');
-                    source.src = message.file.data;
-                    source.type = message.file.type;
-                    audio.appendChild(source);
-                    messageElement.appendChild(audio);
-                }
-                else {
-                    const fileLink = document.createElement('a');
-                    fileLink.href = message.file.data;
-                    fileLink.textContent = `[${message.file.name}]`;
-                    fileLink.target = '_blank';
-                    messageElement.appendChild(fileLink);
-                }
-            }
-
-            const timestampSpan = document.createElement('span');
-            timestampSpan.classList.add('message-timestamp');
-            const date = new Date(message.timestamp);
-            timestampSpan.textContent = date.toLocaleTimeString();
-            messageElement.appendChild(timestampSpan);
-
-            chatContainer.appendChild(messageElement);
-            chatContainer.scrollTop = chatContainer.scrollHeight;  // Auto-scroll to bottom
-
-            // Show Notification
-            if (message.username !== profileUsername.textContent) {
-                showNotification(message.username, message.text);
-            }
+        function createAvatar() {
+            const geometry = new THREE.BoxGeometry(0.4, 0.4, 0.4); // Smaller
+            const material = new THREE.MeshPhongMaterial({ color: 0x00ff00, specular: 0x00ff00, shininess: 70 }); // More metallic
+            const cube = new THREE.Mesh(geometry, material);
+            cube.position.y = 0.2;  // Slightly above the ground
+            return cube;
         }
 
-        // Function to handle file uploads (client-side preview)
-        fileInput.addEventListener('change', () => {
-            filePreview.innerHTML = ''; // Clear previous previews
-            const file = fileInput.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    if (file.type.startsWith('image/')) {
-                        const img = document.createElement('img');
-                        img.src = e.target.result;
-                        img.style.maxWidth = '100px';
-                        img.style.marginRight = '5px';
-                        filePreview.appendChild(img);
-                    } else if (file.type.startsWith('audio/')) {
-                         const audio = document.createElement('audio');
-                         audio.controls = true;
-                         const source = document.createElement('source');
-                         source.src = e.target.result;
-                         source.type = file.type;
-                         audio.appendChild(source);
-                         filePreview.appendChild(audio);
-                    }
-                    else {
-                        const fileNameSpan = document.createElement('span');
-                        fileNameSpan.textContent = file.name;
-                        filePreview.appendChild(fileNameSpan);
-                    }
-                };
-                reader.readAsDataURL(file);
+        function addMessageToChatbox(message, isMyMessage = false) {
+            const messageDiv = document.createElement('div');
+            messageDiv.textContent = `${message.username}: ${message.message} (${new Date(message.timestamp).toLocaleTimeString()})`;
+            messageDiv.classList.add('message');
+            if (isMyMessage) {
+                messageDiv.classList.add('my-message');
             }
-        });
+            chatboxContainer.appendChild(messageDiv);
+            chatboxContainer.scrollTop = chatboxContainer.scrollHeight;
+        }
 
+        function moveAvatar(avatar, position) {
+           if (avatar) {
+                avatar.position.x = position.x;
+                avatar.position.y = position.y;
+                avatar.position.z = position.z;
+           }
+        }
 
-        socket.on('chat history', (history) => {
-            history.forEach(addMessage);
-        });
+        function displayPoll(pollData) {
+            currentPoll = pollData; // Store the current poll
+            const pollArea = document.createElement('div');
+            pollArea.id = 'polling-area';
 
-        socket.on('chat message', (msg) => {
-            addMessage(msg);
-        });
+            const question = document.createElement('div');
+            question.classList.add('poll-question');
+            question.textContent = pollData.question;
+            pollArea.appendChild(question);
 
-        sendButton.addEventListener('click', () => {
-            const message = messageInput.value;
-            const file = fileInput.files[0];
-            if (message.trim() !== '' || file) {
-                const formData = new FormData();
-                formData.append('message', message);
-                if (file) {
-                    formData.append('file', file);
-                }
-
-                fetch('/chat', { // Assuming you'll handle this route in index.js
-                    method: 'POST',
-                    body: formData,
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                         // Reset input fields and file preview after sending.
-                        messageInput.value = '';
-                        fileInput.value = '';
-                        filePreview.innerHTML = '';
-                    } else {
-                         console.error('Failed to send message:', data.error);
-                    }
-                })
-                .catch(error => {
-                    console.error('Error sending message:', error);
+            pollData.options.forEach((option, index) => {
+                const optionButton = document.createElement('div');
+                optionButton.classList.add('poll-option');
+                optionButton.textContent = option.text;
+                optionButton.addEventListener('click', () => {
+                    // Send the vote
+                    socket.emit('vote', { pollId: pollData.id, optionIndex: index });
                 });
-            }
-        });
-
-        function logout() {
-            window.location.href = '/logout';
-        }
-
-        // Fetch username on page load (assuming you have a way to get it from the server)
-        fetch('/profile')
-            .then(response => response.json())
-            .then(data => {
-                if (data.username) {
-                    profileUsername.textContent = data.username;
-                }
-            })
-            .catch(error => {
-                console.error('Error fetching profile:', error);
+                pollArea.appendChild(optionButton);
             });
 
-        // Function to show a notification
-        function showNotification(username, messageText) {
-            if (Notification.permission === 'granted') {
-                new Notification(username, {
-                    body: messageText,
-                    icon: 'icon.png', // Ganti dengan ikon aplikasi Anda
-                });
-            } else if (Notification.permission !== 'denied') {
-                Notification.requestPermission().then(permission => {
-                    if (permission === 'granted') {
-                        new Notification(username, {
-                            body: messageText,
-                            icon: 'icon.png', // Ganti dengan ikon aplikasi Anda
-                        });
+            chatboxContainer.appendChild(pollArea);
+            chatboxContainer.scrollTop = chatboxContainer.scrollHeight;
+        }
+         function updatePollResults(pollResults) {
+            // Find the poll area and clear it
+            let pollArea = document.getElementById('polling-area');
+            if (!pollArea) {
+                // Poll area doesn't exist, so create it
+                pollArea = document.createElement('div');
+                pollArea.id = 'polling-area';
+                chatboxContainer.appendChild(pollArea);
+            }
+
+            // Clear existing content
+            pollArea.innerHTML = '';
+
+            // Display the question
+            const question = document.createElement('div');
+            question.classList.add('poll-question');
+            question.textContent = pollResults.question;
+            pollArea.appendChild(question);
+
+            // Display the options and results
+            pollResults.options.forEach((option, index) => {
+                const optionDiv = document.createElement('div');
+                optionDiv.textContent = `${option.text}:`;
+
+                const resultBar = document.createElement('div');
+                resultBar.classList.add('poll-result-bar');
+                const fillBar = document.createElement('div');
+                fillBar.classList.add('poll-result-fill');
+                const percentage = (pollResults.votes[index] / pollResults.totalVotes) * 100;
+                fillBar.style.width = `${percentage}%`;
+                resultBar.appendChild(fillBar);
+
+                const resultText = document.createElement('div');
+                resultText.classList.add('poll-result-text');
+                resultText.textContent = `${percentage.toFixed(1)}%`; // Show the percentage
+                resultBar.appendChild(resultText);
+                optionDiv.appendChild(resultBar);
+
+                pollArea.appendChild(optionDiv);
+            });
+        }
+        // =====================
+        //  LOGIN
+        // =====================
+        loginButton.addEventListener('click', () => {
+            username = usernameInput.value.trim();
+            if (username) {
+                socket.emit('userJoin', username, (response) => {
+                    if (response.status === 'success') {
+                        loginContainer.style.display = 'none';
+                         const avatar = createAvatar();
+                         avatar.userData.username = username; // Simpan username di userData
+                         scene.add(avatar);
+                         userAvatars[socket.id] = avatar;
+                    } else {
+                        alert('Gagal bergabung: ' + response.message);
                     }
                 });
+            } else {
+                alert('Silakan masukkan nama pengguna.');
             }
+        });
+
+        // =====================
+        //  EVENT LISTENERS
+        // =====================
+
+        socket.on('connect', () => {
+            console.log('Connected to server');
+        });
+        // Event: Menerima pesan dari server
+        socket.on('message', (message) => {
+            const isMyMessage = message.id === socket.id;
+            addMessageToChatbox(message, isMyMessage);
+        });
+
+        // Event: Menampilkan daftar user
+        socket.on('userList', (users) => {
+            // Bersihkan avatar yang ada (kecuali avatar sendiri)
+            for (const id in userAvatars) {
+                if (id !== socket.id && userAvatars[id]) {
+                    scene.remove(userAvatars[id]);
+                }
+            }
+             users.forEach(user => {
+                if (user.id !== socket.id) { // Jangan buat avatar sendiri
+                    if (!userAvatars[user.id]) {
+                       const avatar = createAvatar();
+                       avatar.userData.username = user.username; // Simpan username
+                       scene.add(avatar);
+                       userAvatars[user.id] = avatar;
+                   }
+                   // Atur posisi avatar jika ada
+                   moveAvatar(userAvatars[user.id], user.position);
+                }
+            });
+        });
+        // Event:  Update Posisi user lain
+        socket.on('userMoved', (data) => {
+             if (userAvatars[data.id]) {
+                 moveAvatar(userAvatars[data.id], data.position);
+             }
+        });
+
+        socket.on('chatHistory', (history) => {
+            history.forEach(message => {
+                addMessageToChatbox(message, message.id === socket.id);
+            });
+        });
+        socket.on('newPoll', (pollData) => {
+            displayPoll(pollData);
+        });
+        socket.on('pollResults', (pollResults) => {
+           updatePollResults(pollResults);
+        });
+
+        // =====================
+        //  KIRIM PESAN
+        // =====================
+        sendButton.addEventListener('click', () => {
+            const messageText = messageInput.value.trim();
+            if (messageText && username) {
+                socket.emit('chatMessage', messageText);
+                messageInput.value = '';
+            }
+        });
+        // =====================
+        //  PENGENDALI PERGERAKAN (Example)
+        // =====================
+        const moveForward = () => {
+            if (!userAvatars[socket.id]) return;
+            userAvatars[socket.id].position.z -= moveSpeed;
+            socket.emit('userMove', userAvatars[socket.id].position);
+            isMoving = true;
+        }
+        const moveBackward = () => {
+            if (!userAvatars[socket.id]) return;
+            userAvatars[socket.id].position.z += moveSpeed;
+            socket.emit('userMove', userAvatars[socket.id].position);
+            isMoving = true;
+        }
+        const moveLeft = () => {
+            if (!userAvatars[socket.id]) return;
+            userAvatars[socket.id].position.x -= moveSpeed;
+            socket.emit('userMove', userAvatars[socket.id].position);
+            isMoving = true;
+        }
+        const moveRight = () => {
+            if (!userAvatars[socket.id]) return;
+            userAvatars[socket.id].position.x += moveSpeed;
+            socket.emit('userMove', userAvatars[socket.id].position);
+            isMoving = true;
         }
 
-        // Request permission on page load
-        document.addEventListener('DOMContentLoaded', () => {
-            if (!("Notification" in window)) {
-                alert("This browser does not support desktop notifications");
-            } else {
-                Notification.requestPermission();
+        document.addEventListener('keydown', (event) => {
+            if (!username) return;
+            if (event.key === 'w' || event.key === 'ArrowUp') {
+                moveForward();
+            } else if (event.key === 's' || event.key === 'ArrowDown') {
+                moveBackward();
+            } else if (event.key === 'a' || event.key === 'ArrowLeft') {
+                moveLeft();
+            } else if (event.key === 'd' || event.key === 'ArrowRight') {
+                moveRight();
             }
+        });
+        document.addEventListener('keyup', (event) => {
+            isMoving = false;
+        });
+        // =====================
+        //  RENDER LOOP
+        // =====================
+        function animate() {
+            requestAnimationFrame(animate);
+            // Rotation for avatar (example)
+            if (userAvatars[socket.id]) {
+                userAvatars[socket.id].rotation.y += 0.01; // Subtle rotation
+            }
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        // Responsive Layout
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / (window.innerHeight * 0.8);
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight * 0.8);
         });
     </script>
 </body>
-
 </html>
