@@ -9,7 +9,7 @@ const server = http.createServer(app);
 const io = socketIO(server);
 const port = process.env.PORT || 3000;
 
-app.use(express.json()); // Middleware untuk parsing JSON
+app.use(express.json());
 app.use(express.static(path.join(__dirname, '.')));
 
 const chatHistoryFile = 'chat_history.json';
@@ -18,10 +18,12 @@ function loadChatHistory() {
     try {
         if (fs.existsSync(chatHistoryFile)) {
             const data = fs.readFileSync(chatHistoryFile, 'utf8');
-            return JSON.parse(data) || [];
+            const parsedData = JSON.parse(data);
+            console.log('Loaded chat history:', parsedData); // Logging
+            return parsedData || [];
         } else {
-            // Jika file tidak ada, buat file dengan array kosong
             fs.writeFileSync(chatHistoryFile, JSON.stringify([], null, 2), 'utf8');
+            console.log('Created new chat history file.'); // Logging
             return [];
         }
     } catch (error) {
@@ -33,6 +35,7 @@ function loadChatHistory() {
 function saveChatHistory(chatHistory) {
     try {
         fs.writeFileSync(chatHistoryFile, JSON.stringify(chatHistory, null, 2), 'utf8');
+        console.log('Saved chat history.'); // Logging
     } catch (error) {
         console.error('Error saving chat history:', error);
     }
@@ -47,18 +50,18 @@ io.on('connection', (socket) => {
     });
 });
 
-// Endpoint untuk mendapatkan riwayat chat
 app.get('/chathistory', (req, res) => {
+    console.log('GET /chathistory');  // Logging
     res.json(chatHistory);
 });
 
-// Endpoint untuk mengirim pesan (menyimpan dan menyiarkan)
 app.post('/chathistory', (req, res) => {
+    console.log('POST /chathistory', req.body);  // Logging
     const newMessage = req.body;
     chatHistory.push(newMessage);
     saveChatHistory(chatHistory);
-    io.emit('chat message', newMessage); // Broadcast ke semua klien
-    res.status(201).send('Message added'); // 201 Created
+    io.emit('chat message', newMessage);
+    res.status(201).send('Message added');
 });
 
 server.listen(port, () => {
