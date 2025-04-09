@@ -231,7 +231,10 @@
             <button id="sendButton"><i class="fas fa-paper-plane"></i> Send</button>
         </div>
     </div>
+    <!-- SweetAlert2 JS -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.16/dist/sweetalert2.all.min.js"></script>
+    <!-- Socket.IO client -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.4/socket.io.js" integrity="sha512-G5c5yFv0iE/0/k19jHhQ43M4L00N/W48+f5k2T8zG9269z5fU7e1q3O0d2mQ/f8Gz3v3LqM2nU6A==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script>
         const chatMessages = document.getElementById('chat-messages');
         const messageInput = document.getElementById('messageInput');
@@ -245,7 +248,11 @@
         let selectedImage = null;
         const API_URL = 'http://localhost:3000';
 
+        // Inisialisasi Socket.IO
+        const socket = io(API_URL);
+
         function addMessage(sender, text, timestamp, isSent, imageUrl) {
+            console.log('Adding message:', { sender, text, timestamp, isSent, imageUrl });
             const messageDiv = document.createElement('div');
             messageDiv.classList.add('message');
             if (isSent) {
@@ -309,30 +316,35 @@
             loadingIndicator.classList.remove('active');
         }
 
+        // Load chat history from server
         async function loadChatHistory() {
             console.log('Loading chat history...');
             try {
                 const response = await fetch(`${API_URL}/chathistory`);
                 console.log('Fetch response:', response);
                 if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+                    const errorText = await response.text();
+                    throw new Error(`HTTP error! Status: ${response.status}, Text: ${errorText}`);
                 }
                 const chatHistory = await response.json();
                 console.log('Chat history loaded:', chatHistory);
                 chatHistory.forEach(message => {
-                    addMessage(message.sender, message.text, message.timestamp, message.isSent, message.imageUrl);
+                    addMessage(message.sender, message.text, message.timestamp, false, message.imageUrl); //  isSent: false, karena ini pesan lama
                 });
             } catch (error) {
                 console.error('Error loading chat history:', error);
+                console.error('Error name:', error.name);
+                console.error('Error message:', error.message);
+                console.error('Error stack:', error.stack);
                 Swal.fire({
                     icon: 'error',
                     title: 'Oops...',
-                    text: 'Failed to load chat history.',
+                    text: 'Failed to load chat history.  Check the console for details.',
                 });
             }
         }
 
-        sendButton.addEventListener('click', async () => {
+        sendButton.addEventListener('click', () => {
             const messageText = messageInput.value.trim();
             const nickname = nicknameInput.value.trim();
             const timestamp = getTimestamp();
@@ -347,48 +359,33 @@
             }
 
             showLoading();
-            try {
-                let imageUrl = null;
-                if (selectedImage) {
-                    imageUrl = URL.createObjectURL(selectedImage);
-                }
-
-                const message = {
-                    sender: nickname || 'Anonymous',
-                    text: messageText,
-                    timestamp: timestamp,
-                    isSent: true,
-                    imageUrl: imageUrl
-                };
-
-                const response = await fetch(`${API_URL}/chathistory`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(message),
-                });
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                addMessage(message.sender, message.text, message.timestamp, true, message.imageUrl);
-                messageInput.value = '';
-                imageInput.value = '';
-                selectedImage = null;
-                if (imagePreview) {
-                    imagePreview.remove();
-                    imagePreview = null;
-                }
-            } catch (error) {
-                console.error('Error sending message:', error);
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Oops...',
-                    text: 'Failed to send message.',
-                });
-            } finally {
-                hideLoading();
+            let imageUrl = null;
+            if (selectedImage) {
+                imageUrl = URL.createObjectURL(selectedImage);
             }
+            const message = {
+                sender: nickname || 'Anonymous',
+                text: messageText,
+                timestamp: timestamp,
+                isSent: true,
+                imageUrl: imageUrl
+            };
+            console.log('Sending message to server:', message);
+            socket.emit('chat message', message); // Kirim pesan ke server melalui Socket.IO
+            messageInput.value = '';
+            imageInput.value = '';
+            selectedImage = null;
+            if (imagePreview) {
+                imagePreview.remove();
+                imagePreview = null;
+            }
+            hideLoading();
+        });
+
+        // Terima pesan baru dari server (melalui Socket.IO)
+        socket.on('chat message', (message) => {
+            console.log('Received message from server:', message);
+            addMessage(message.sender, message.text, message.timestamp, message.isSent, message.imageUrl);
         });
 
         addImageButton.addEventListener('click', () => {
